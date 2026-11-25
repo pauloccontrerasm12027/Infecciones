@@ -1,1 +1,846 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitor Diario de Estancias Clínicas - EPS Sanitas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f7f9;
+      color: #1e293b;
+    }
+    .dropzone-active {
+      border-color: #0d9488 !important;
+      background-color: #f0fdfa !important;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
 
+  <!-- Top Security & Identity Header -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-teal-400 shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">Analizador Diario de Censos Clínicos — EPS Sanitas</h1>
+          <p class="text-xs text-slate-400">Consolidación automatizada de Urgencias y Hospitalización (20 IPS)</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          100% Local · Cero Exposición de Datos
+        </span>
+        <button onclick="exportAllToExcel()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-teal-600 hover:bg-teal-500 text-white transition shadow-sm cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Exportar Excel Consolidado
+        </button>
+        <button onclick="clearAllData()" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 border border-slate-700 transition cursor-pointer">
+          Limpiar Todo
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Clinical Rules Banner -->
+    <section class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded">Reglas de Extracción Activas</span>
+            <span class="text-xs text-slate-500">Solo <strong>EPS Sanitas</strong> (Excluye Colsanitas y Medisanitas MP)</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">Neumonía / J189</span>
+            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">IVU / N390</span>
+            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">Bronquitis / J218</span>
+            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">Pielonefritis / N11x / N111</span>
+            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">EPOC / Exacerbación / J456</span>
+            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">Insuficiencia Cardiaca / I500</span>
+            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">Celulitis / L03</span>
+            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">Bronquiolitis / J219</span>
+          </div>
+        </div>
+
+        <!-- KPI Summary Cards -->
+        <div class="grid grid-cols-3 gap-3 shrink-0">
+          <div class="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-center">
+            <div class="text-xs text-slate-500 font-medium">IPS Cargadas</div>
+            <div class="text-lg font-bold text-slate-800"><span id="kpi-clinics">0</span><span class="text-xs font-normal text-slate-400">/20</span></div>
+          </div>
+          <div class="bg-amber-50/70 border border-amber-200 rounded-lg px-3.5 py-2 text-center">
+            <div class="text-xs text-amber-700 font-medium">Urgencias</div>
+            <div id="kpi-urg" class="text-lg font-bold text-amber-800">0</div>
+          </div>
+          <div class="bg-teal-50/70 border border-teal-200 rounded-lg px-3.5 py-2 text-center">
+            <div class="text-xs text-teal-700 font-medium">Hospitalización</div>
+            <div id="kpi-hosp" class="text-lg font-bold text-teal-800">0</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Clinic Dropzones Section -->
+    <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/60">
+        <div>
+          <h2 class="text-sm font-bold text-slate-800">1. Carga Diaria por Institución (Excel .xlsx / .xls o PDF)</h2>
+          <p class="text-xs text-slate-500">Haz clic o arrastra el archivo correspondiente en el espacio de cada clínica. Los datos se procesan exclusivamente en tu navegador.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" id="clinic-search" oninput="filterClinics()" placeholder="Filtrar clínica o ciudad..." class="text-xs border border-slate-300 rounded-lg px-3 py-1.5 w-52 focus:outline-none focus:border-teal-500 bg-white" />
+          <button onclick="toggleClinicsPanel()" id="toggle-panel-btn" class="text-xs font-medium text-slate-600 hover:text-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white cursor-pointer">
+            Contraer
+          </button>
+        </div>
+      </div>
+
+      <div id="clinics-grid" class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-h-[540px] overflow-y-auto">
+        <!-- Rendered dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- Consolidated Tables Section -->
+    <section class="space-y-6">
+
+      <!-- URGENCIAS TABLE -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-slate-200 bg-amber-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <div>
+              <h3 class="text-sm font-bold text-slate-800">CUADRO 1: URGENCIAS <span id="badge-urg" class="ml-1.5 px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 font-semibold">0</span></h3>
+              <p class="text-xs text-slate-500">Incluye: Urgencias, Observación, Transición — Solo EPS Sanitas (Excluye MP Colsanitas y Medisanitas)</p>
+            </div>
+          </div>
+          <button onclick="copyTableToClipboard('urgencias')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-2xs transition cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+            </svg>
+            Copiar Tabla Urgencias
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                <th class="py-2.5 px-4">Ciudad</th>
+                <th class="py-2.5 px-4">Institución</th>
+                <th class="py-2.5 px-4">Servicio / Cama / Registro / Habitación / Pabellón</th>
+                <th class="py-2.5 px-4">Diagnóstico Principal</th>
+                <th class="py-2.5 px-4 text-center">Días de Estancia</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-urgencias" class="divide-y divide-slate-100 text-xs text-slate-700">
+              <tr>
+                <td colspan="5" class="py-8 text-center text-slate-400">Carga archivos en las instituciones superiores para visualizar los pacientes de Urgencias.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- HOSPITALIZACION TABLE -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-slate-200 bg-teal-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
+            <div>
+              <h3 class="text-sm font-bold text-slate-800">CUADRO 2: HOSPITALIZACIÓN <span id="badge-hosp" class="ml-1.5 px-2 py-0.5 text-xs rounded-full bg-teal-100 text-teal-800 font-semibold">0</span></h3>
+              <p class="text-xs text-slate-500">Incluye: Pensionados, Piso, Hospitalización, UCI / Intermedios, Quirófanos, Cirugía — Solo EPS Sanitas</p>
+            </div>
+          </div>
+          <button onclick="copyTableToClipboard('hospitalizacion')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-2xs transition cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+            </svg>
+            Copiar Tabla Hospitalización
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                <th class="py-2.5 px-4">Ciudad</th>
+                <th class="py-2.5 px-4">Institución</th>
+                <th class="py-2.5 px-4">Servicio / Cama / Registro / Habitación / Pabellón</th>
+                <th class="py-2.5 px-4">Diagnóstico Principal</th>
+                <th class="py-2.5 px-4 text-center">Días de Estancia</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-hospitalizacion" class="divide-y divide-slate-100 text-xs text-slate-700">
+              <tr>
+                <td colspan="5" class="py-8 text-center text-slate-400">Carga archivos en las instituciones superiores para visualizar los pacientes de Hospitalización.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Audit Log -->
+    <section class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+      <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Bitácora de Auditoría Local</h4>
+      <div id="audit-log" class="text-xs text-slate-600 space-y-1 max-h-36 overflow-y-auto font-mono bg-slate-50 p-3 rounded-lg border border-slate-200">
+        <div class="text-slate-400">Sistema listo. Ningún dato sale de este equipo.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 z-50">
+    Acción completada
+  </div>
+
+  <script>
+    // Configure PDF.js worker
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    // 20 Preconfigured Clinics
+    const CLINICS = [
+      { id: 'fcv', name: 'Fundación Cardiovascular de Colombia', city: 'Floridablanca' },
+      { id: 'hic', name: 'Hospital Internacional', city: 'Piedecuesta' },
+      { id: 'sanluis', name: 'Clínica San Luis', city: 'Bucaramanga' },
+      { id: 'sanvicente', name: 'Hospital San Vicente', city: 'Arauca' },
+      { id: 'santaana', name: 'Clínica Santa Ana', city: 'Cúcuta' },
+      { id: 'emiro', name: 'Hospital Emiro Cañizares', city: 'Ocaña' },
+      { id: 'sarare', name: 'Hospital del Sarare', city: 'Arauca' },
+      { id: 'medquir', name: 'Clínica Médico Quirúrgica', city: 'Cúcuta' },
+      { id: 'urgbuc', name: 'Clínica Urgencias Bucaramanga', city: 'Bucaramanga' },
+      { id: 'magdalena', name: 'Clínica La Magdalena', city: 'Barrancabermeja' },
+      { id: 'torcoroma', name: 'Clínica Nuestra Señora de Torcoroma', city: 'Ocaña' },
+      { id: 'mariaaux', name: 'Clínica de Especialistas María Auxiliadora', city: 'Aguachica' },
+      { id: 'altacomp', name: 'Clínica Alta Complejidad', city: 'Aguachica' },
+      { id: 'sanjose', name: 'Clínica San José', city: 'Cúcuta' },
+      { id: 'hospreg_ag', name: 'Hospital Regional', city: 'Aguachica' },
+      { id: 'comuneros', name: 'Clínica Los Comuneros', city: 'Bucaramanga' },
+      { id: 'manuela', name: 'Hospital Manuela Beltrán', city: 'Socorro' },
+      { id: 'hospreg_sg', name: 'Hospital Regional', city: 'San Gil' },
+      { id: 'duarte', name: 'Clínica Medical Duarte', city: 'Cúcuta' },
+      { id: 'sanjuandedios', name: 'Hospital San Juan de Dios', city: 'Pamplona' }
+    ];
+
+    // State per clinic: { fileName, totalRows, sanitasCount, records: [] }
+    const clinicState = {};
+    let panelExpanded = true;
+
+    function norm(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .toUpperCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('opacity-0');
+      setTimeout(() => t.classList.add('opacity-0'), 2600);
+    }
+
+    function logAudit(msg, type = 'info') {
+      const box = document.getElementById('audit-log');
+      const now = new Date().toLocaleTimeString('es-CO', { hour12: false });
+      const color = type === 'warn' ? 'text-amber-700' : type === 'err' ? 'text-rose-700' : 'text-slate-700';
+      const line = document.createElement('div');
+      line.className = color;
+      line.textContent = `[${now}] ${msg}`;
+      box.prepend(line);
+    }
+
+    function toggleClinicsPanel() {
+      panelExpanded = !panelExpanded;
+      const grid = document.getElementById('clinics-grid');
+      const btn = document.getElementById('toggle-panel-btn');
+      if (panelExpanded) {
+        grid.classList.remove('hidden');
+        btn.textContent = 'Contraer';
+      } else {
+        grid.classList.add('hidden');
+        btn.textContent = 'Expandir (20 IPS)';
+      }
+    }
+
+    function filterClinics() {
+      const q = norm(document.getElementById('clinic-search').value);
+      CLINICS.forEach(c => {
+        const el = document.getElementById(`card-${c.id}`);
+        if (!el) return;
+        const match = norm(c.name).includes(q) || norm(c.city).includes(q);
+        el.style.display = match ? '' : 'none';
+      });
+    }
+
+    function renderClinicCards() {
+      const grid = document.getElementById('clinics-grid');
+      grid.innerHTML = CLINICS.map(c => {
+        const st = clinicState[c.id];
+        const loaded = Boolean(st);
+        const matchCount = loaded ? st.records.length : 0;
+        return `
+          <div id="card-${c.id}"
+               ondragover="handleDragOver(event, '${c.id}')"
+               ondragleave="handleDragLeave(event, '${c.id}')"
+               ondrop="handleDrop(event, '${c.id}')"
+               class="relative rounded-xl border ${loaded ? 'border-teal-400 bg-teal-50/30' : 'border-dashed border-slate-300 bg-white hover:border-teal-400 hover:bg-slate-50/60'} p-3 transition flex flex-col justify-between gap-2">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <span class="inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 mb-1">${c.city}</span>
+                <h3 class="text-xs font-bold text-slate-800 leading-snug truncate" title="${c.name}">${c.name}</h3>
+              </div>
+              ${loaded ? `
+                <button onclick="removeClinicFile('${c.id}')" title="Quitar archivo" class="text-slate-400 hover:text-rose-600 p-0.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              ` : ''}
+            </div>
+
+            ${loaded ? `
+              <div class="text-[11px] bg-white border border-teal-200 rounded-lg p-2 space-y-1">
+                <div class="font-medium text-slate-700 truncate" title="${st.fileName}">📄 ${st.fileName}</div>
+                <div class="flex items-center justify-between text-[10px] text-slate-500">
+                  <span>Sanitas: <strong>${st.sanitasCount}</strong></span>
+                  <span class="px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 font-bold">Extraídos: ${matchCount}</span>
+                </div>
+              </div>
+            ` : `
+              <label for="file-${c.id}" class="mt-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-slate-50 hover:bg-teal-50 text-slate-500 hover:text-teal-700 border border-slate-200/80 text-[11px] font-medium cursor-pointer transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                Subir Excel o PDF
+              </label>
+            `}
+            <input id="file-${c.id}" type="file" accept=".xlsx,.xls,.csv,.pdf" class="hidden" onchange="handleFileSelect(event, '${c.id}')" />
+          </div>
+        `;
+      }).join('');
+    }
+
+    function handleDragOver(e, id) {
+      e.preventDefault();
+      document.getElementById(`card-${id}`)?.classList.add('dropzone-active');
+    }
+
+    function handleDragLeave(e, id) {
+      e.preventDefault();
+      document.getElementById(`card-${id}`)?.classList.remove('dropzone-active');
+    }
+
+    function handleDrop(e, id) {
+      e.preventDefault();
+      document.getElementById(`card-${id}`)?.classList.remove('dropzone-active');
+      const file = e.dataTransfer?.files?.[0];
+      if (file) processClinicFile(id, file);
+    }
+
+    function handleFileSelect(e, id) {
+      const file = e.target?.files?.[0];
+      if (file) processClinicFile(id, file);
+    }
+
+    function removeClinicFile(id) {
+      delete clinicState[id];
+      renderClinicCards();
+      renderConsolidatedTables();
+    }
+
+    function clearAllData() {
+      Object.keys(clinicState).forEach(k => delete clinicState[k]);
+      renderClinicCards();
+      renderConsolidatedTables();
+      logAudit('Memoria limpiada. Todos los registros fueron eliminados.');
+      showToast('Todos los datos fueron limpiados');
+    }
+
+    // =========================================================================
+    // CLINICAL & PAYER FILTERING ENGINE
+    // =========================================================================
+
+    function isValidSanitas(text) {
+      const s = norm(text);
+      if (!s.includes('SANITAS')) return false;
+      // Exclude Colsanitas and Medisanitas Prepaid Medicine
+      if (s.includes('COLSANITAS') || s.includes('MEDISANITAS')) return false;
+      return true;
+    }
+
+    function hasExcludedMP(text) {
+      const s = norm(text);
+      return s.includes('COLSANITAS') || s.includes('MEDISANITAS');
+    }
+
+    // Target diagnoses:
+    // Neumonía o J189, Infección vías urinarias o N390, Bronquitis o J218,
+    // Pielonefritis o N11x o N111, EPOC o Exacerbación o J456,
+    // Insuficiencia cardiaca o I500, Celulitis o L03, Bronquiolitis o J219
+    const DX_RULES = [
+      { label: 'Neumonía', codes: ['J189', 'J180', 'J181', 'J182', 'J188', 'J15', 'J12', 'J13', 'J14', 'J16', 'J17', 'J851'], words: ['NEUMONIA', 'BRONCONEUMONIA'] },
+      { label: 'Infección vías urinarias', codes: ['N390'], words: ['INFECCION DE VIAS URINARIAS', 'INFECCION VIAS URINARIAS', 'INFECCION URINARIA'] },
+      { label: 'Bronquitis', codes: ['J218', 'J20', 'J40', 'J41', 'J42'], words: ['BRONQUITIS'] },
+      { label: 'Pielonefritis', codes: ['N11', 'N110', 'N111', 'N118', 'N119', 'N10', 'N12'], words: ['PIELONEFRITIS'] },
+      { label: 'EPOC / Exacerbación', codes: ['J456', 'J44', 'J440', 'J441', 'J448', 'J449'], words: ['EPOC', 'EXACERBACION', 'OBSTRUCTIVA CRONICA'] },
+      { label: 'Insuficiencia cardiaca', codes: ['I500', 'I50', 'I501', 'I509', 'I110'], words: ['INSUFICIENCIA CARDIACA', 'FALLA CARDIACA'] },
+      { label: 'Celulitis', codes: ['L03', 'L030', 'L031', 'L032', 'L033', 'L038', 'L039'], words: ['CELULITIS'] },
+      { label: 'Bronquiolitis', codes: ['J219', 'J21', 'J210'], words: ['BRONQUIOLITIS'] }
+    ];
+
+    function matchDiagnosis(text) {
+      const s = norm(text);
+      if (!s) return null;
+      for (const rule of DX_RULES) {
+        for (const code of rule.codes) {
+          const rx = new RegExp(`(^|[^A-Z0-9])${code}([A-Z0-9]?)(?=$|[^A-Z0-9])`);
+          if (rx.test(s)) return rule.label;
+        }
+        for (const w of rule.words) {
+          if (s.includes(w)) return rule.label;
+        }
+      }
+      return null;
+    }
+
+    function classifyArea(serviceText) {
+      const s = norm(serviceText);
+      // Urgencias: Urgencias, Observación, Transición, Emergencia
+      if (
+        s.includes('URGENCIA') ||
+        s.includes('OBSERVACION') ||
+        s.includes('TRANSICION') ||
+        s.includes('EMERGENCIA') ||
+        /\bUOBS\b|\bOBU\b|\bOBM\b|\bOBSP\b|\bOBS\d|\bTRS\b|\bTRU\b|\bTRR\b|\bAISLU/.test(s)
+      ) {
+        return 'URGENCIAS';
+      }
+      return 'HOSPITALIZACION';
+    }
+
+    function calcDaysFromDate(dateVal) {
+      if (dateVal === null || dateVal === undefined || dateVal === '') return 0;
+      if (typeof dateVal === 'number' && dateVal < 1000) return Math.max(0, Math.round(dateVal));
+      let d = null;
+      if (typeof dateVal === 'number' && dateVal > 20000) {
+        // Excel serial date
+        d = new Date(Math.round((dateVal - 25569) * 86400 * 1000));
+      } else {
+        const str = String(dateVal).trim();
+        const mDMY = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+        if (mDMY) {
+          let yr = parseInt(mDMY[3], 10);
+          if (yr < 100) yr += 2000;
+          d = new Date(yr, parseInt(mDMY[2], 10) - 1, parseInt(mDMY[1], 10));
+        } else {
+          const parsed = new Date(str);
+          if (!isNaN(parsed.getTime())) d = parsed;
+        }
+      }
+      if (!d || isNaN(d.getTime())) return 0;
+      const now = new Date();
+      const diff = Math.floor((now.setHours(0,0,0,0) - d.setHours(0,0,0,0)) / 86400000);
+      return Math.max(0, diff);
+    }
+
+    // =========================================================================
+    // FILE PARSING (EXCEL & PDF)
+    // =========================================================================
+
+    async function processClinicFile(clinicId, file) {
+      const clinic = CLINICS.find(c => c.id === clinicId);
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      try {
+        let extracted = { sanitasCount: 0, records: [] };
+
+        if (ext === 'pdf') {
+          extracted = await parsePdfFile(clinic, file);
+        } else {
+          extracted = await parseExcelFile(clinic, file);
+        }
+
+        clinicState[clinicId] = {
+          fileName: file.name,
+          sanitasCount: extracted.sanitasCount,
+          records: extracted.records
+        };
+
+        renderClinicCards();
+        renderConsolidatedTables();
+        logAudit(`${clinic.name} (${clinic.city}): ${extracted.records.length} pacientes extraídos de ${extracted.sanitasCount} registros EPS Sanitas.`);
+        showToast(`${clinic.name}: ${extracted.records.length} registros extraídos`);
+      } catch (err) {
+        console.error(err);
+        logAudit(`Error procesando ${file.name} en ${clinic.name}: ${err.message}`, 'err');
+        showToast(`Error al leer ${file.name}`);
+      }
+    }
+
+    async function parseExcelFile(clinic, file) {
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: 'array' });
+      const records = [];
+      let sanitasCount = 0;
+
+      for (const sheetName of wb.SheetNames) {
+        const ws = wb.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+        if (!rows || rows.length === 0) continue;
+
+        // Detect header row & column indices
+        let headerIdx = -1;
+        let colMap = {};
+
+        for (let i = 0; i < Math.min(rows.length, 15); i++) {
+          const rNorm = rows[i].map(cell => norm(cell));
+          const hasDoc = rNorm.some(h => h.includes('DOCUMENTO') || h.includes('IDENTIFICACION') || h === 'ID' || h.includes('CEDULA'));
+          const hasDx = rNorm.some(h => h.includes('DIAGNOSTICO') || h === 'DX' || h === 'CIE10' || h === 'UTL_DX');
+          const hasBedOrSrv = rNorm.some(h => h.includes('CAMA') || h.includes('HABITACION') || h.includes('SERVICIO') || h.includes('UBICACION') || h.includes('ESTACION') || h.includes('INGRESO') || h.includes('ATENCION') || h.includes('REGISTRO'));
+
+          if ((hasDoc || hasBedOrSrv) && (hasDx || rNorm.length >= 6)) {
+            headerIdx = i;
+            rNorm.forEach((h, idx) => {
+              if (colMap.atencion === undefined && (h === 'ATENCION' || h === 'INGRESO' || h === 'NO INGRESO' || h === 'NO. INGRESO' || h === 'REGISTRO')) colMap.atencion = idx;
+              if (colMap.cama === undefined && (h.includes('CAMA') || h.includes('HABITACION'))) colMap.cama = idx;
+              if (colMap.servicio === undefined && (h.includes('SERVICIO') || h.includes('UBICACION') || h.includes('ESTACION') || h.includes('GRUPO') || h.includes('PABELLON') || h.includes('HSUNOMBRE') || h.includes('UNIDAD FUNCIONAL'))) colMap.servicio = idx;
+              if (colMap.piso === undefined && (h.includes('PISO') || h.includes('SECTOR'))) colMap.piso = idx;
+              if (colMap.tipoDoc === undefined && (h.includes('TIPO DOC') || h === 'T.D.' || h === 'T. DOCUMENTO' || h === 'TIPO_DOCUMENTO')) colMap.tipoDoc = idx;
+              if (colMap.doc === undefined && (h.includes('DOCUMENTO') || h.includes('IDENTIFICACION') || h === 'ID' || h === 'CEDULA')) colMap.doc = idx;
+              if (colMap.entidad === undefined && (h.includes('ENTIDAD') || h.includes('EMPRESA') || h.includes('CONTRATO') || h === 'EPS' || h.includes('TERCERO') || h === 'PLAN')) colMap.entidad = idx;
+              if (colMap.entidad2 === undefined && (h === 'ENTIDAD 2' || h === 'PLAN B.' || h === 'NOMBREPLAN')) colMap.entidad2 = idx;
+              if (colMap.cie === undefined && (h === 'CIE10' || h.includes('CODIGO') || h === 'DX. INICIAL' || h === 'DIAGNOSTICOINGRESO')) colMap.cie = idx;
+              if (colMap.dx === undefined && (h.includes('DIAGNOSTICO') || h === 'UTL_DX' || h === 'NOMBREDIAGNOSTICO')) colMap.dx = idx;
+              if (colMap.dxSec === undefined && h.includes('SECUNDARIO')) colMap.dxSec = idx;
+              if (colMap.dias === undefined && (h.includes('DIAS') || h.includes('ESTANCIA') || h === 'D.S.' || h === 'TIEMPO')) colMap.dias = idx;
+              if (colMap.fechaIng === undefined && h.includes('FECHA') && h.includes('INGRESO')) colMap.fechaIng = idx;
+              if (colMap.fechaSal === undefined && h.includes('SALIDA')) colMap.fechaSal = idx;
+            });
+            break;
+          }
+        }
+
+        let currentGroupHeader = '';
+        const startRow = headerIdx >= 0 ? headerIdx + 1 : 0;
+
+        for (let i = startRow; i < rows.length; i++) {
+          const row = rows[i];
+          const nonEmpty = row.filter(c => String(c).trim() !== '');
+          if (nonEmpty.length === 0) continue;
+
+          // Detect section/group banner rows (e.g., FCV "Urgencias - Total Pacientes: 6" or San Jose "PABELLON - 61...")
+          if (nonEmpty.length <= 2) {
+            const banner = String(nonEmpty[0]).trim();
+            if (banner.includes('Total Pacientes:') || norm(banner).startsWith('PABELLON')) {
+              currentGroupHeader = banner.split('-  Total Pacientes:')[0].trim();
+              continue;
+            }
+          }
+
+          // Skip discharged rows if Fecha Salida is populated (e.g. Pamplona Urgencias)
+          if (colMap.fechaSal !== undefined) {
+            const sal = String(row[colMap.fechaSal] || '').trim();
+            if (sal && sal !== '1/01/0001 12:00:00 a. m.' && !sal.startsWith('0001')) continue;
+          }
+
+          const rowJoined = row.map(c => String(c)).join(' | ');
+
+          // Payer check: must match Sanitas and NOT have Colsanitas/Medisanitas as primary payer
+          let payerText = '';
+          if (colMap.entidad !== undefined) payerText += ' ' + String(row[colMap.entidad] || '');
+          if (colMap.entidad2 !== undefined) payerText += ' ' + String(row[colMap.entidad2] || '');
+          if (!payerText.trim()) payerText = rowJoined;
+
+          if (colMap.entidad !== undefined && hasExcludedMP(row[colMap.entidad])) continue;
+          if (!isValidSanitas(payerText)) continue;
+
+          sanitasCount++;
+
+          // Diagnosis check
+          let cieVal = colMap.cie !== undefined ? String(row[colMap.cie] || '').trim() : '';
+          let dxVal = colMap.dx !== undefined ? String(row[colMap.dx] || '').trim() : '';
+          let dxSecVal = colMap.dxSec !== undefined ? String(row[colMap.dxSec] || '').trim() : '';
+
+          // Handle duplicate column names where CIE10 and NombreDiagnostico sit adjacent
+          if (colMap.cie !== undefined && colMap.dx === colMap.cie && row[colMap.cie + 1]) {
+            dxVal = String(row[colMap.cie + 1] || '').trim();
+          }
+
+          let primaryCombined = [cieVal, dxVal].filter(Boolean).join(' - ');
+          if (!primaryCombined) primaryCombined = rowJoined;
+
+          const matchedPrimary = matchDiagnosis(primaryCombined);
+          const matchedSecondary = !matchedPrimary && dxSecVal ? matchDiagnosis(dxSecVal) : null;
+
+          if (!matchedPrimary && !matchedSecondary) continue;
+
+          // Extract identifiers & location
+          const docStr = colMap.doc !== undefined ? String(row[colMap.doc] || '').trim() : '';
+          const tipoDocStr = colMap.tipoDoc !== undefined ? String(row[colMap.tipoDoc] || '').trim() : '';
+          const fullDoc = [tipoDocStr, docStr].filter(Boolean).join(' ');
+          const atenStr = colMap.atencion !== undefined ? String(row[colMap.atencion] || '').trim() : '';
+          const camaStr = colMap.cama !== undefined ? String(row[colMap.cama] || '').trim() : '';
+          const srvStr = colMap.servicio !== undefined ? String(row[colMap.servicio] || '').trim() : currentGroupHeader;
+          const pisoStr = colMap.piso !== undefined ? String(row[colMap.piso] || '').trim() : '';
+
+          const locParts = [];
+          if (currentGroupHeader && !norm(srvStr).includes(norm(currentGroupHeader))) locParts.push(currentGroupHeader);
+          if (srvStr) locParts.push(srvStr);
+          if (pisoStr && !norm(srvStr).includes(norm(pisoStr))) locParts.push(pisoStr);
+          if (camaStr) locParts.push(`Cama/Hab: ${camaStr}`);
+          if (atenStr && atenStr !== docStr) locParts.push(`Ing/Reg: ${atenStr}`);
+          if (fullDoc) locParts.push(`ID: ${fullDoc}`);
+
+          const servicioCama = locParts.join(' | ') || 'Sin ubicación especificada';
+
+          // Extract stay days
+          let dias = 0;
+          if (colMap.dias !== undefined && row[colMap.dias] !== '') {
+            const rawD = String(row[colMap.dias]).trim();
+            const dMatch = rawD.match(/^(\d+)\s*d/i);
+            if (dMatch) {
+              dias = parseInt(dMatch[1], 10);
+            } else if (!isNaN(Number(rawD))) {
+              dias = Math.max(0, Math.round(Number(rawD)));
+            }
+          } else if (colMap.fechaIng !== undefined) {
+            dias = calcDaysFromDate(row[colMap.fechaIng]);
+          }
+
+          const finalDx = matchedPrimary
+            ? primaryCombined
+            : `${primaryCombined} [Secundario: ${dxSecVal}]`;
+
+          const area = classifyArea(`${currentGroupHeader} ${srvStr} ${camaStr}`);
+
+          records.push({
+            ciudad: clinic.city,
+            institucion: clinic.name,
+            servicioCama,
+            diagnostico: finalDx,
+            dias,
+            area
+          });
+        }
+      }
+
+      return { sanitasCount, records };
+    }
+
+    async function parsePdfFile(clinic, file) {
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      let fullText = '';
+
+      for (let p = 1; p <= pdf.numPages; p++) {
+        const page = await pdf.getPage(p);
+        const content = await page.getTextContent();
+        const strings = content.items.map(it => it.str);
+        fullText += '\n' + strings.join(' ');
+      }
+
+      const records = [];
+      let sanitasCount = 0;
+
+      // Split into patient blocks using 7-to-14 digit document/record sequences
+      const tokens = fullText.split(/\s+/);
+      let currentBlock = [];
+      const blocks = [];
+
+      for (const tok of tokens) {
+        if (/^\d{7,14}$/.test(tok) && currentBlock.length > 6) {
+          blocks.push(currentBlock.join(' '));
+          currentBlock = [tok];
+        } else {
+          currentBlock.push(tok);
+        }
+      }
+      if (currentBlock.length > 0) blocks.push(currentBlock.join(' '));
+
+      for (const blk of blocks) {
+        if (hasExcludedMP(blk)) continue;
+        // If PDF explicitly states EPS, verify Sanitas; if PDF is a dedicated Sanitas report, accept
+        const mentionsOtherEps = /\b(NUEVA EPS|COOSALUD|SALUD TOTAL|FAMISANAR|ASMET|COMFAORIENTE|SOAT|PREVISORA)\b/.test(norm(blk));
+        if (mentionsOtherEps && !isValidSanitas(blk)) continue;
+
+        sanitasCount++;
+        const matched = matchDiagnosis(blk);
+        if (!matched) continue;
+
+        const docMatch = blk.match(/\b(\d{6,14})\b/);
+        const habMatch = blk.match(/\b(HAB\.?\s*\d+[A-Z]?|CAMA\s*\d+[A-Z]?|CUN\d+|UCP\d+|INT\d+|UCI\d+|HOS\w+|OBS\w+)\b/i);
+        const dateMatch = blk.match(/\b(\d{2}\/\d{2}\/\d{4})\b/);
+
+        const docId = docMatch ? docMatch[1] : 'No registra';
+        const hab = habMatch ? habMatch[0] : 'Hospitalización / Piso';
+        const dias = dateMatch ? calcDaysFromDate(dateMatch[1]) : 0;
+
+        // Extract diagnosis phrase around matched keyword/code
+        const dxSnippet = matched;
+        const area = classifyArea(hab);
+
+        records.push({
+          ciudad: clinic.city,
+          institucion: clinic.name,
+          servicioCama: `${hab} | ID: ${docId}`,
+          diagnostico: dxSnippet,
+          dias,
+          area
+        });
+      }
+
+      return { sanitasCount, records };
+    }
+
+    // =========================================================================
+    // RENDERING & EXPORT
+    // =========================================================================
+
+    function getConsolidatedData() {
+      const urg = [];
+      const hosp = [];
+
+      Object.values(clinicState).forEach(st => {
+        st.records.forEach(r => {
+          if (r.area === 'URGENCIAS') urg.push(r);
+          else hosp.push(r);
+        });
+      });
+
+      const sorter = (a, b) =>
+        a.ciudad.localeCompare(b.ciudad, 'es') ||
+        a.institucion.localeCompare(b.institucion, 'es') ||
+        b.dias - a.dias;
+
+      urg.sort(sorter);
+      hosp.sort(sorter);
+      return { urg, hosp };
+    }
+
+    function renderConsolidatedTables() {
+      const { urg, hosp } = getConsolidatedData();
+      const loadedClinics = Object.keys(clinicState).length;
+
+      document.getElementById('kpi-clinics').textContent = loadedClinics;
+      document.getElementById('kpi-urg').textContent = urg.length;
+      document.getElementById('kpi-hosp').textContent = hosp.length;
+      document.getElementById('badge-urg').textContent = urg.length;
+      document.getElementById('badge-hosp').textContent = hosp.length;
+
+      renderTableBody('tbody-urgencias', urg, 'Sin pacientes de EPS Sanitas con los diagnósticos filtrados en Urgencias.');
+      renderTableBody('tbody-hospitalizacion', hosp, 'Sin pacientes de EPS Sanitas con los diagnósticos filtrados en Hospitalización.');
+    }
+
+    function renderTableBody(tbodyId, list, emptyMsg) {
+      const tbody = document.getElementById(tbodyId);
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">${emptyMsg}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(r => `
+        <tr class="hover:bg-slate-50/90 transition">
+          <td class="py-2.5 px-4 font-semibold text-slate-800 whitespace-nowrap">${escapeHtml(r.ciudad)}</td>
+          <td class="py-2.5 px-4 font-medium text-slate-700">${escapeHtml(r.institucion)}</td>
+          <td class="py-2.5 px-4 text-slate-600 font-mono text-[11px]">${escapeHtml(r.servicioCama)}</td>
+          <td class="py-2.5 px-4 font-semibold text-teal-900">${escapeHtml(r.diagnostico)}</td>
+          <td class="py-2.5 px-4 text-center">
+            <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-bold ${r.dias >= 7 ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-800'}">
+              ${r.dias}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function copyTableToClipboard(type) {
+      const { urg, hosp } = getConsolidatedData();
+      const rows = type === 'urgencias' ? urg : hosp;
+      if (rows.length === 0) {
+        showToast('No hay datos para copiar en esta tabla');
+        return;
+      }
+      const header = ['Ciudad', 'Institución', 'Servicio / Cama / Registro / Habitación / Pabellón', 'Diagnóstico Principal', 'Días de Estancia'].join('\t');
+      const body = rows.map(r => [r.ciudad, r.institucion, r.servicioCama, r.diagnostico, r.dias].join('\t')).join('\n');
+      navigator.clipboard.writeText(`${header}\n${body}`).then(() => {
+        showToast(`Tabla de ${type === 'urgencias' ? 'Urgencias' : 'Hospitalización'} copiada al portapapeles`);
+      });
+    }
+
+    function exportAllToExcel() {
+      const { urg, hosp } = getConsolidatedData();
+      if (urg.length === 0 && hosp.length === 0) {
+        showToast('Carga al menos un archivo antes de exportar');
+        return;
+      }
+
+      const mapRow = r => ({
+        'Ciudad': r.ciudad,
+        'Institución': r.institucion,
+        'Servicio / Cama / Registro / Habitación / Pabellón': r.servicioCama,
+        'Diagnóstico Principal': r.diagnostico,
+        'Días de Estancia': r.dias
+      });
+
+      const wb = XLSX.utils.book_new();
+      const wsUrg = XLSX.utils.json_to_sheet(urg.length ? urg.map(mapRow) : [{ 'Mensaje': 'Sin registros en Urgencias' }]);
+      const wsHosp = XLSX.utils.json_to_sheet(hosp.length ? hosp.map(mapRow) : [{ 'Mensaje': 'Sin registros en Hospitalización' }]);
+
+      XLSX.utils.book_append_sheet(wb, wsUrg, 'Urgencias');
+      XLSX.utils.book_append_sheet(wb, wsHosp, 'Hospitalizacion');
+
+      const today = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `Consolidado_EPS_Sanitas_${today}.xlsx`);
+      logAudit(`Excel consolidado exportado (Urgencias: ${urg.length}, Hospitalización: ${hosp.length}).`);
+      showToast('Archivo Excel descargado');
+    }
+
+    // Initialize UI
+    renderClinicCards();
+  </script>
+</body>
+</html>
