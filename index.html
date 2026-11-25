@@ -46,7 +46,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
     .container {
-      max-width: 1280px;
+      max-width: 1380px;
       width: 100%;
       margin: 0 auto;
       padding: 0 16px;
@@ -132,8 +132,8 @@
     .search-input:focus { border-color: var(--teal-600); }
     .clinics-grid {
       padding: 16px; display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 12px; max-height: 520px; overflow-y: auto;
+      grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+      gap: 12px; max-height: 560px; overflow-y: auto;
     }
     .clinics-grid.hidden { display: none; }
     .clinic-card {
@@ -154,32 +154,37 @@
     .clinic-title { font-size: 12px; font-weight: 700; color: var(--slate-800); }
     .btn-remove {
       background: none; border: none; color: var(--slate-500); font-weight: 700;
-      cursor: pointer; font-size: 14px; padding: 0 4px;
+      cursor: pointer; font-size: 12px; padding: 0 4px; line-height: 1;
     }
     .btn-remove:hover { color: #be123c; }
     .upload-label {
-      display: block; text-align: center; padding: 8px; border-radius: 8px;
+      display: block; text-align: center; padding: 7px 8px; border-radius: 8px;
       background: var(--slate-100); border: 1px solid var(--slate-200);
       color: var(--slate-600); font-size: 11px; font-weight: 600; cursor: pointer;
     }
     .upload-label:hover { background: var(--teal-100); color: var(--teal-700); border-color: var(--teal-600); }
+    .upload-label.add-more {
+      background: #fff; border-style: dashed; border-color: var(--teal-600); color: var(--teal-700);
+      padding: 5px 8px; font-size: 10.5px;
+    }
+    .files-stack { display: flex; flex-direction: column; gap: 6px; }
     .file-info {
       background: #fff; border: 1px solid var(--teal-100); border-radius: 8px;
-      padding: 8px; font-size: 11px;
+      padding: 6px 8px; font-size: 11px;
     }
+    .file-head { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
     .file-name { font-weight: 600; color: var(--slate-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .file-stats { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; color: var(--slate-500); }
+    .file-stats { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; color: var(--slate-500); }
     .pill-count { background: var(--teal-100); color: var(--teal-700); font-weight: 700; padding: 1px 6px; border-radius: 4px; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
     th {
       background: var(--slate-100); border-bottom: 1px solid var(--slate-200);
-      padding: 10px 14px; font-size: 11px; font-weight: 700;
-      text-transform: uppercase; color: var(--slate-600);
+      padding: 10px 12px; font-size: 11px; font-weight: 700;
+      color: var(--slate-600); white-space: nowrap;
     }
-    td { padding: 10px 14px; border-bottom: 1px solid var(--slate-100); color: var(--slate-700); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--slate-100); color: var(--slate-700); vertical-align: top; }
     tr:hover td { background: #f8fafc; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
     .days-pill {
       display: inline-block; min-width: 28px; text-align: center; padding: 2px 8px;
       border-radius: 999px; font-weight: 700; font-size: 11px;
@@ -214,7 +219,7 @@
         <div class="brand-icon">+</div>
         <div>
           <h1>Analizador Diario de Censos Clínicos — EPS Sanitas</h1>
-          <p>Consolidación automatizada de Urgencias y Hospitalización (20 IPS)</p>
+          <p>Consolidación automatizada de Urgencias y Hospitalización (20 IPS · Carga Múltiple por Clínica)</p>
         </div>
       </div>
       <div class="header-actions">
@@ -227,7 +232,7 @@
 
   <main class="container">
     <div id="lib-warning" class="banner-warn">
-      <strong>Aviso de red institucional:</strong> Tu red bloqueó la descarga automática del lector de Excel/PDF externo. Si los archivos Excel no cargan, guarda tus censos como <strong>CSV (delimitado por comas)</strong> en Excel y súbelos aquí: la aplicación los leerá de forma 100% nativa sin depender de internet.
+      <strong>Aviso de red institucional:</strong> Tu red bloqueó la descarga automática del lector de Excel/PDF externo. Si los archivos Excel no cargan, guarda tus censos como <strong>CSV (delimitado por comas)</strong> en Excel y súbelos aquí: la aplicación los leerá de forma 100% nativa.
     </div>
 
     <!-- Reglas y KPIs -->
@@ -269,8 +274,8 @@
     <section class="card">
       <div class="section-head">
         <div>
-          <h2>1. Carga Diaria por Institución (Excel .xlsx / .xls, CSV o PDF)</h2>
-          <p>Haz clic o arrastra el archivo en el espacio de cada clínica. Todo se procesa localmente en tu equipo.</p>
+          <h2>1. Carga Diaria por Institución (1, 2 o más archivos Excel, CSV o PDF por clínica)</h2>
+          <p>Selecciona o arrastra uno o varios archivos en cada clínica (ej. Contributivo + Subsidiado, o Urgencias + Hospitalización).</p>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
           <input type="text" id="clinic-search" class="search-input" oninput="filterClinics()" placeholder="Filtrar clínica o ciudad..." />
@@ -295,13 +300,16 @@
             <tr>
               <th>Ciudad</th>
               <th>Institución</th>
-              <th>Servicio / Cama / Registro / Habitación / Pabellón</th>
+              <th>Paciente</th>
+              <th>Tipo ID</th>
+              <th>Número ID</th>
               <th>Diagnóstico Principal</th>
-              <th style="text-align:center;">Días de Estancia</th>
+              <th>Servicio / Cama</th>
+              <th style="text-align:center;">Días Estancia</th>
             </tr>
           </thead>
           <tbody id="tbody-urgencias">
-            <tr><td colspan="5" class="empty-row">Carga archivos en las instituciones superiores para visualizar los pacientes de Urgencias.</td></tr>
+            <tr><td colspan="8" class="empty-row">Carga archivos en las instituciones superiores para visualizar los pacientes de Urgencias.</td></tr>
           </tbody>
         </table>
       </div>
@@ -322,13 +330,16 @@
             <tr>
               <th>Ciudad</th>
               <th>Institución</th>
-              <th>Servicio / Cama / Registro / Habitación / Pabellón</th>
+              <th>Paciente</th>
+              <th>Tipo ID</th>
+              <th>Número ID</th>
               <th>Diagnóstico Principal</th>
-              <th style="text-align:center;">Días de Estancia</th>
+              <th>Servicio / Cama</th>
+              <th style="text-align:center;">Días Estancia</th>
             </tr>
           </thead>
           <tbody id="tbody-hospitalizacion">
-            <tr><td colspan="5" class="empty-row">Carga archivos en las instituciones superiores para visualizar los pacientes de Hospitalización.</td></tr>
+            <tr><td colspan="8" class="empty-row">Carga archivos en las instituciones superiores para visualizar los pacientes de Hospitalización.</td></tr>
           </tbody>
         </table>
       </div>
@@ -338,14 +349,13 @@
     <section class="card" style="padding:14px 18px;">
       <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b;">Bitácora de Auditoría Local</div>
       <div id="audit-log" class="audit-box">
-        <div>Sistema listo. Interfaz autónoma cargada sin dependencias externas de diseño.</div>
+        <div>Sistema listo. Soporte activo para múltiples archivos (Excel, CSV o PDF) por cada clínica.</div>
       </div>
     </section>
   </main>
 
   <div id="toast" class="toast">Acción completada</div>
 
-  <!-- Carga diferida de librerías de Excel y PDF -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 
@@ -383,6 +393,7 @@
       { id: 'sanjuandedios', name: 'Hospital San Juan de Dios', city: 'Pamplona' }
     ];
 
+    // State per clinic: { files: [ { id, fileName, sanitasCount, records: [] } ] }
     const clinicState = {};
     let panelExpanded = true;
 
@@ -430,8 +441,22 @@
       const grid = document.getElementById('clinics-grid');
       grid.innerHTML = CLINICS.map(c => {
         const st = clinicState[c.id];
-        const loaded = Boolean(st);
-        const matchCount = loaded ? st.records.length : 0;
+        const files = st?.files || [];
+        const loaded = files.length > 0;
+
+        const filesHtml = files.map((f, idx) => `
+          <div class="file-info">
+            <div class="file-head">
+              <div class="file-name" title="${escapeHtml(f.fileName)}">📄 ${escapeHtml(f.fileName)}</div>
+              <button class="btn-remove" onclick="removeSingleFile('${c.id}', ${idx})" title="Quitar este archivo">✕</button>
+            </div>
+            <div class="file-stats">
+              <span>Sanitas: <strong>${f.sanitasCount}</strong></span>
+              <span class="pill-count">Extraídos: ${f.records.length}</span>
+            </div>
+          </div>
+        `).join('');
+
         return `
           <div id="card-${c.id}"
                ondragover="handleDragOver(event, '${c.id}')"
@@ -443,20 +468,18 @@
                 <span class="city-badge">${c.city}</span>
                 <div class="clinic-title" title="${c.name}">${c.name}</div>
               </div>
-              ${loaded ? `<button class="btn-remove" onclick="removeClinicFile('${c.id}')" title="Quitar">✕</button>` : ''}
+              ${loaded ? `<button class="btn-remove" onclick="removeClinicAllFiles('${c.id}')" title="Quitar todos los archivos de esta clínica">Limpiar</button>` : ''}
             </div>
+
             ${loaded ? `
-              <div class="file-info">
-                <div class="file-name" title="${st.fileName}">📄 ${st.fileName}</div>
-                <div class="file-stats">
-                  <span>Sanitas: <strong>${st.sanitasCount}</strong></span>
-                  <span class="pill-count">Extraídos: ${matchCount}</span>
-                </div>
+              <div class="files-stack">
+                ${filesHtml}
+                <label for="file-${c.id}" class="upload-label add-more">+ Agregar otro archivo (${files.length} cargado${files.length > 1 ? 's' : ''})</label>
               </div>
             ` : `
-              <label for="file-${c.id}" class="upload-label">Subir Excel, CSV o PDF</label>
+              <label for="file-${c.id}" class="upload-label">Subir 1 o 2 archivos (Excel, CSV, PDF)</label>
             `}
-            <input id="file-${c.id}" type="file" accept=".xlsx,.xls,.csv,.pdf" class="hidden" onchange="handleFileSelect(event, '${c.id}')" />
+            <input id="file-${c.id}" type="file" multiple accept=".xlsx,.xls,.csv,.pdf" class="hidden" onchange="handleFileSelect(event, '${c.id}')" />
           </div>
         `;
       }).join('');
@@ -475,17 +498,29 @@
     function handleDrop(e, id) {
       e.preventDefault();
       document.getElementById(`card-${id}`)?.classList.remove('drop-active');
-      const file = e.dataTransfer?.files?.[0];
-      if (file) processClinicFile(id, file);
+      const fileList = e.dataTransfer?.files;
+      if (fileList && fileList.length > 0) processMultipleFiles(id, fileList);
     }
 
     function handleFileSelect(e, id) {
-      const file = e.target?.files?.[0];
-      if (file) processClinicFile(id, file);
+      const fileList = e.target?.files;
+      if (fileList && fileList.length > 0) processMultipleFiles(id, fileList);
+      e.target.value = '';
     }
 
-    function removeClinicFile(id) {
-      delete clinicState[id];
+    function removeSingleFile(clinicId, fileIdx) {
+      if (!clinicState[clinicId]) return;
+      const removed = clinicState[clinicId].files.splice(fileIdx, 1)[0];
+      if (clinicState[clinicId].files.length === 0) {
+        delete clinicState[clinicId];
+      }
+      renderClinicCards();
+      renderConsolidatedTables();
+      if (removed) logAudit(`Archivo quitado: ${removed.fileName}`);
+    }
+
+    function removeClinicAllFiles(clinicId) {
+      delete clinicState[clinicId];
       renderClinicCards();
       renderConsolidatedTables();
     }
@@ -548,6 +583,22 @@
       return 'HOSPITALIZACION';
     }
 
+    function splitDocId(rawTipo, rawNum) {
+      let tipo = String(rawTipo || '').trim();
+      let num = String(rawNum || '').trim();
+      if (!tipo && num) {
+        const m = num.match(/^(CC|TI|RC|CE|PPT|PT|PA|CN|SC|DE|AS|MS)\s*[-:]?\s*(.+)$/i);
+        if (m) {
+          tipo = m[1].toUpperCase();
+          num = m[2].trim();
+        }
+      }
+      return {
+        tipoId: tipo || 'No registra',
+        numId: num || 'No registra'
+      };
+    }
+
     function calcDaysFromDate(dateVal) {
       if (dateVal === null || dateVal === undefined || dateVal === '') return 0;
       if (typeof dateVal === 'number' && dateVal < 1000) return Math.max(0, Math.round(dateVal));
@@ -574,229 +625,4 @@
 
     function parseCsvRows(text) {
       const sep = text.includes(';') ? ';' : ',';
-      return text.split(/\r?\n/).map(line => line.split(sep).map(cell => cell.replace(/^"|"$/g, '').trim()));
-    }
-
-    async function processClinicFile(clinicId, file) {
-      const clinic = CLINICS.find(c => c.id === clinicId);
-      const ext = file.name.split('.').pop().toLowerCase();
-
-      try {
-        let extracted = { sanitasCount: 0, records: [] };
-
-        if (ext === 'pdf') {
-          if (!window.pdfjsLib) throw new Error('Lector PDF bloqueado por la red institucional.');
-          extracted = await parsePdfFile(clinic, file);
-        } else if (ext === 'csv') {
-          const txt = await file.text();
-          extracted = parseMatrixRows(clinic, parseCsvRows(txt));
-        } else {
-          if (!window.XLSX) throw new Error('Lector Excel bloqueado por la red. Guarda el archivo como .CSV en Excel y súbelo aquí.');
-          const buffer = await file.arrayBuffer();
-          const wb = XLSX.read(buffer, { type: 'array' });
-          for (const sheetName of wb.SheetNames) {
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: '' });
-            const res = parseMatrixRows(clinic, rows);
-            extracted.sanitasCount += res.sanitasCount;
-            extracted.records.push(...res.records);
-          }
-        }
-
-        clinicState[clinicId] = {
-          fileName: file.name,
-          sanitasCount: extracted.sanitasCount,
-          records: extracted.records
-        };
-
-        renderClinicCards();
-        renderConsolidatedTables();
-        logAudit(`${clinic.name} (${clinic.city}): ${extracted.records.length} extraídos de ${extracted.sanitasCount} registros EPS Sanitas.`);
-        showToast(`${clinic.name}: ${extracted.records.length} extraídos`);
-      } catch (err) {
-        logAudit(`Error en ${clinic.name}: ${err.message}`, 'err');
-        showToast(err.message);
-      }
-    }
-
-    function parseMatrixRows(clinic, rows) {
-      const records = [];
-      let sanitasCount = 0;
-      if (!rows || rows.length === 0) return { sanitasCount, records };
-
-      let headerIdx = -1;
-      let colMap = {};
-
-      for (let i = 0; i < Math.min(rows.length, 15); i++) {
-        const rNorm = rows[i].map(cell => norm(cell));
-        const hasDoc = rNorm.some(h => h.includes('DOCUMENTO') || h.includes('IDENTIFICACION') || h === 'ID' || h.includes('CEDULA'));
-        const hasDx = rNorm.some(h => h.includes('DIAGNOSTICO') || h === 'DX' || h === 'CIE10' || h === 'UTL_DX');
-        const hasBedOrSrv = rNorm.some(h => h.includes('CAMA') || h.includes('HABITACION') || h.includes('SERVICIO') || h.includes('UBICACION') || h.includes('ESTACION') || h.includes('INGRESO') || h.includes('ATENCION') || h.includes('REGISTRO'));
-
-        if ((hasDoc || hasBedOrSrv) && (hasDx || rNorm.length >= 6)) {
-          headerIdx = i;
-          rNorm.forEach((h, idx) => {
-            if (colMap.atencion === undefined && (h === 'ATENCION' || h === 'INGRESO' || h === 'NO INGRESO' || h === 'NO. INGRESO' || h === 'REGISTRO')) colMap.atencion = idx;
-            if (colMap.cama === undefined && (h.includes('CAMA') || h.includes('HABITACION'))) colMap.cama = idx;
-            if (colMap.servicio === undefined && (h.includes('SERVICIO') || h.includes('UBICACION') || h.includes('ESTACION') || h.includes('GRUPO') || h.includes('PABELLON') || h.includes('HSUNOMBRE') || h.includes('UNIDAD FUNCIONAL'))) colMap.servicio = idx;
-            if (colMap.piso === undefined && (h.includes('PISO') || h.includes('SECTOR'))) colMap.piso = idx;
-            if (colMap.tipoDoc === undefined && (h.includes('TIPO DOC') || h === 'T.D.' || h === 'T. DOCUMENTO' || h === 'TIPO_DOCUMENTO')) colMap.tipoDoc = idx;
-            if (colMap.doc === undefined && (h.includes('DOCUMENTO') || h.includes('IDENTIFICACION') || h === 'ID' || h === 'CEDULA')) colMap.doc = idx;
-            if (colMap.entidad === undefined && (h.includes('ENTIDAD') || h.includes('EMPRESA') || h.includes('CONTRATO') || h === 'EPS' || h.includes('TERCERO') || h === 'PLAN')) colMap.entidad = idx;
-            if (colMap.entidad2 === undefined && (h === 'ENTIDAD 2' || h === 'PLAN B.' || h === 'NOMBREPLAN')) colMap.entidad2 = idx;
-            if (colMap.cie === undefined && (h === 'CIE10' || h.includes('CODIGO') || h === 'DX. INICIAL' || h === 'DIAGNOSTICOINGRESO')) colMap.cie = idx;
-            if (colMap.dx === undefined && (h.includes('DIAGNOSTICO') || h === 'UTL_DX' || h === 'NOMBREDIAGNOSTICO')) colMap.dx = idx;
-            if (colMap.dxSec === undefined && h.includes('SECUNDARIO')) colMap.dxSec = idx;
-            if (colMap.dias === undefined && (h.includes('DIAS') || h.includes('ESTANCIA') || h === 'D.S.' || h === 'TIEMPO')) colMap.dias = idx;
-            if (colMap.fechaIng === undefined && h.includes('FECHA') && h.includes('INGRESO')) colMap.fechaIng = idx;
-            if (colMap.fechaSal === undefined && h.includes('SALIDA')) colMap.fechaSal = idx;
-          });
-          break;
-        }
-      }
-
-      let currentGroupHeader = '';
-      const startRow = headerIdx >= 0 ? headerIdx + 1 : 0;
-
-      for (let i = startRow; i < rows.length; i++) {
-        const row = rows[i];
-        const nonEmpty = row.filter(c => String(c).trim() !== '');
-        if (nonEmpty.length === 0) continue;
-
-        if (nonEmpty.length <= 2) {
-          const banner = String(nonEmpty[0]).trim();
-          if (banner.includes('Total Pacientes:') || norm(banner).startsWith('PABELLON')) {
-            currentGroupHeader = banner.split('-  Total Pacientes:')[0].trim();
-            continue;
-          }
-        }
-
-        if (colMap.fechaSal !== undefined) {
-          const sal = String(row[colMap.fechaSal] || '').trim();
-          if (sal && sal !== '1/01/0001 12:00:00 a. m.' && !sal.startsWith('0001')) continue;
-        }
-
-        const rowJoined = row.map(c => String(c)).join(' | ');
-        let payerText = '';
-        if (colMap.entidad !== undefined) payerText += ' ' + String(row[colMap.entidad] || '');
-        if (colMap.entidad2 !== undefined) payerText += ' ' + String(row[colMap.entidad2] || '');
-        if (!payerText.trim()) payerText = rowJoined;
-
-        if (colMap.entidad !== undefined && hasExcludedMP(row[colMap.entidad])) continue;
-        if (!isValidSanitas(payerText)) continue;
-
-        sanitasCount++;
-
-        let cieVal = colMap.cie !== undefined ? String(row[colMap.cie] || '').trim() : '';
-        let dxVal = colMap.dx !== undefined ? String(row[colMap.dx] || '').trim() : '';
-        let dxSecVal = colMap.dxSec !== undefined ? String(row[colMap.dxSec] || '').trim() : '';
-
-        if (colMap.cie !== undefined && colMap.dx === colMap.cie && row[colMap.cie + 1]) {
-          dxVal = String(row[colMap.cie + 1] || '').trim();
-        }
-
-        let primaryCombined = [cieVal, dxVal].filter(Boolean).join(' - ');
-        if (!primaryCombined) primaryCombined = rowJoined;
-
-        const matchedPrimary = matchDiagnosis(primaryCombined);
-        const matchedSecondary = !matchedPrimary && dxSecVal ? matchDiagnosis(dxSecVal) : null;
-        if (!matchedPrimary && !matchedSecondary) continue;
-
-        const docStr = colMap.doc !== undefined ? String(row[colMap.doc] || '').trim() : '';
-        const tipoDocStr = colMap.tipoDoc !== undefined ? String(row[colMap.tipoDoc] || '').trim() : '';
-        const fullDoc = [tipoDocStr, docStr].filter(Boolean).join(' ');
-        const atenStr = colMap.atencion !== undefined ? String(row[colMap.atencion] || '').trim() : '';
-        const camaStr = colMap.cama !== undefined ? String(row[colMap.cama] || '').trim() : '';
-        const srvStr = colMap.servicio !== undefined ? String(row[colMap.servicio] || '').trim() : currentGroupHeader;
-        const pisoStr = colMap.piso !== undefined ? String(row[colMap.piso] || '').trim() : '';
-
-        const locParts = [];
-        if (currentGroupHeader && !norm(srvStr).includes(norm(currentGroupHeader))) locParts.push(currentGroupHeader);
-        if (srvStr) locParts.push(srvStr);
-        if (pisoStr && !norm(srvStr).includes(norm(pisoStr))) locParts.push(pisoStr);
-        if (camaStr) locParts.push(`Cama/Hab: ${camaStr}`);
-        if (atenStr && atenStr !== docStr) locParts.push(`Ing/Reg: ${atenStr}`);
-        if (fullDoc) locParts.push(`ID: ${fullDoc}`);
-
-        const servicioCama = locParts.join(' | ') || 'Sin ubicación especificada';
-
-        let dias = 0;
-        if (colMap.dias !== undefined && row[colMap.dias] !== '') {
-          const rawD = String(row[colMap.dias]).trim();
-          const dMatch = rawD.match(/^(\d+)\s*d/i);
-          if (dMatch) dias = parseInt(dMatch[1], 10);
-          else if (!isNaN(Number(rawD))) dias = Math.max(0, Math.round(Number(rawD)));
-        } else if (colMap.fechaIng !== undefined) {
-          dias = calcDaysFromDate(row[colMap.fechaIng]);
-        }
-
-        const finalDx = matchedPrimary ? primaryCombined : `${primaryCombined} [Secundario: ${dxSecVal}]`;
-        const area = classifyArea(`${currentGroupHeader} ${srvStr} ${camaStr}`);
-
-        records.push({
-          ciudad: clinic.city,
-          institucion: clinic.name,
-          servicioCama,
-          diagnostico: finalDx,
-          dias,
-          area
-        });
-      }
-
-      return { sanitasCount, records };
-    }
-
-    async function parsePdfFile(clinic, file) {
-      const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-      let fullText = '';
-      for (let p = 1; p <= pdf.numPages; p++) {
-        const page = await pdf.getPage(p);
-        const content = await page.getTextContent();
-        fullText += '\n' + content.items.map(it => it.str).join(' ');
-      }
-      const records = [];
-      let sanitasCount = 0;
-      const tokens = fullText.split(/\s+/);
-      let currentBlock = [];
-      const blocks = [];
-      for (const tok of tokens) {
-        if (/^\d{7,14}$/.test(tok) && currentBlock.length > 6) {
-          blocks.push(currentBlock.join(' '));
-          currentBlock = [tok];
-        } else {
-          currentBlock.push(tok);
-        }
-      }
-      if (currentBlock.length > 0) blocks.push(currentBlock.join(' '));
-
-      for (const blk of blocks) {
-        if (hasExcludedMP(blk)) continue;
-        const mentionsOtherEps = /\b(NUEVA EPS|COOSALUD|SALUD TOTAL|FAMISANAR|ASMET|COMFAORIENTE|SOAT|PREVISORA)\b/.test(norm(blk));
-        if (mentionsOtherEps && !isValidSanitas(blk)) continue;
-        sanitasCount++;
-        const matched = matchDiagnosis(blk);
-        if (!matched) continue;
-        const docMatch = blk.match(/\b(\d{6,14})\b/);
-        const habMatch = blk.match(/\b(HAB\.?\s*\d+[A-Z]?|CAMA\s*\d+[A-Z]?|CUN\d+|UCP\d+|INT\d+|UCI\d+|HOS\w+|OBS\w+)\b/i);
-        const dateMatch = blk.match(/\b(\d{2}\/\d{2}\/\d{4})\b/);
-        const docId = docMatch ? docMatch[1] : 'No registra';
-        const hab = habMatch ? habMatch[0] : 'Hospitalización / Piso';
-        const dias = dateMatch ? calcDaysFromDate(dateMatch[1]) : 0;
-        records.push({
-          ciudad: clinic.city,
-          institucion: clinic.name,
-          servicioCama: `${hab} | ID: ${docId}`,
-          diagnostico: matched,
-          dias,
-          area: classifyArea(hab)
-        });
-      }
-      return { sanitasCount, records };
-    }
-
-    function getConsolidatedData() {
-      const urg = [], hosp = [];
-      Object.values(clinicState).forEach(st => {
-        st.records.forEach(r => (r.area === 'URGENCIAS' ? urg : hosp).push(r));
-      });
-      const sorter = (a, b) => a.ciudad.localeCompare(b
+      return text.split(/\r?\n/).map(line => line.split(
