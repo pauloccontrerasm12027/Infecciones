@@ -4,85 +4,300 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Monitor Diario de Estancias Clínicas - EPS Sanitas</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #f4f7f9;
+      --surface: #ffffff;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --teal-700: #0f766e;
+      --teal-600: #0d9488;
+      --teal-100: #ccfbf1;
+      --teal-50: #f0fdfa;
+      --amber-800: #92400e;
+      --amber-100: #fef3c7;
+      --amber-50: #fffbeb;
+      --rose-800: #9f1239;
+      --rose-100: #ffe4e6;
+      --emerald-300: #6ee7b7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f4f7f9;
-      color: #1e293b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--slate-800);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.4;
     }
-    .dropzone-active {
-      border-color: #0d9488 !important;
-      background-color: #f0fdfa !important;
+    header {
+      background: var(--slate-900);
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+    .container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 16px;
     }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
+    .header-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 0;
     }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 3px;
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(20, 184, 166, 0.2);
+      border: 1px solid rgba(45, 212, 191, 0.35);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #2dd4bf; font-size: 18px;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
+    .brand h1 { font-size: 16px; font-weight: 700; color: #fff; }
+    .brand p { font-size: 12px; color: #94a3b8; }
+    .header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .badge-secure {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+      background: rgba(16, 185, 129, 0.15); color: var(--emerald-300);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .dot-live { width: 8px; height: 8px; border-radius: 50%; background: #34d399; }
+    .btn {
+      border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px;
+      font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-primary { background: var(--teal-600); color: #fff; }
+    .btn-primary:hover { background: var(--teal-700); }
+    .btn-dark { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+    .btn-dark:hover { background: #7f1d1d; color: #fecdd3; }
+    .btn-light { background: #fff; color: var(--slate-700); border: 1px solid var(--slate-300); }
+    .btn-light:hover { background: var(--slate-100); }
+    main { flex: 1; padding: 20px 0 40px; display: flex; flex-direction: column; gap: 20px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--slate-200);
+      border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); overflow: hidden;
+    }
+    .rules-bar {
+      padding: 16px; display: flex; flex-wrap: wrap;
+      align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .tag-rule {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      color: var(--teal-700); background: var(--teal-50);
+      padding: 3px 8px; border-radius: 4px; border: 1px solid var(--teal-100);
+    }
+    .dx-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .chip {
+      font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 6px;
+      background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200);
+    }
+    .kpi-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; min-width: 280px; }
+    .kpi {
+      border-radius: 10px; padding: 8px 12px; text-align: center;
+      border: 1px solid var(--slate-200); background: var(--slate-100);
+    }
+    .kpi.urg { background: var(--amber-50); border-color: #fde68a; color: var(--amber-800); }
+    .kpi.hosp { background: var(--teal-50); border-color: var(--teal-100); color: var(--teal-700); }
+    .kpi-label { font-size: 11px; font-weight: 600; }
+    .kpi-val { font-size: 18px; font-weight: 700; margin-top: 2px; }
+    .section-head {
+      padding: 14px 18px; border-bottom: 1px solid var(--slate-200);
+      background: #f8fafc; display: flex; flex-wrap: wrap;
+      align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .section-head.urg-head { background: var(--amber-50); }
+    .section-head.hosp-head { background: var(--teal-50); }
+    .section-head h2, .section-head h3 { font-size: 14px; font-weight: 700; color: var(--slate-800); }
+    .section-head p { font-size: 12px; color: var(--slate-500); margin-top: 2px; }
+    .search-input {
+      font-size: 12px; padding: 6px 12px; border-radius: 8px;
+      border: 1px solid var(--slate-300); width: 210px; outline: none;
+    }
+    .search-input:focus { border-color: var(--teal-600); }
+    .clinics-grid {
+      padding: 16px; display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px; max-height: 520px; overflow-y: auto;
+    }
+    .clinics-grid.hidden { display: none; }
+    .clinic-card {
+      border: 1px dashed var(--slate-300); border-radius: 10px; padding: 12px;
+      background: #fff; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;
+      transition: all 0.15s;
+    }
+    .clinic-card:hover, .clinic-card.drop-active {
+      border-color: var(--teal-600); background: var(--teal-50);
+    }
+    .clinic-card.loaded { border-style: solid; border-color: var(--teal-600); background: #f0fdfa55; }
+    .clinic-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+    .city-badge {
+      display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+      padding: 2px 6px; border-radius: 4px; background: var(--slate-100); color: var(--slate-600);
+      margin-bottom: 4px;
+    }
+    .clinic-title { font-size: 12px; font-weight: 700; color: var(--slate-800); }
+    .btn-remove {
+      background: none; border: none; color: var(--slate-500); font-weight: 700;
+      cursor: pointer; font-size: 14px; padding: 0 4px;
+    }
+    .btn-remove:hover { color: #be123c; }
+    .upload-label {
+      display: block; text-align: center; padding: 8px; border-radius: 8px;
+      background: var(--slate-100); border: 1px solid var(--slate-200);
+      color: var(--slate-600); font-size: 11px; font-weight: 600; cursor: pointer;
+    }
+    .upload-label:hover { background: var(--teal-100); color: var(--teal-700); border-color: var(--teal-600); }
+    .file-info {
+      background: #fff; border: 1px solid var(--teal-100); border-radius: 8px;
+      padding: 8px; font-size: 11px;
+    }
+    .file-name { font-weight: 600; color: var(--slate-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-stats { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; color: var(--slate-500); }
+    .pill-count { background: var(--teal-100); color: var(--teal-700); font-weight: 700; padding: 1px 6px; border-radius: 4px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+    th {
+      background: var(--slate-100); border-bottom: 1px solid var(--slate-200);
+      padding: 10px 14px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; color: var(--slate-600);
+    }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--slate-100); color: var(--slate-700); }
+    tr:hover td { background: #f8fafc; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+    .days-pill {
+      display: inline-block; min-width: 28px; text-align: center; padding: 2px 8px;
+      border-radius: 999px; font-weight: 700; font-size: 11px;
+      background: var(--slate-100); color: var(--slate-800);
+    }
+    .days-pill.high { background: var(--rose-100); color: var(--rose-800); }
+    .empty-row { text-align: center; color: var(--slate-500); padding: 28px !important; }
+    .audit-box {
+      font-family: monospace; font-size: 11px; background: #f8fafc;
+      border: 1px solid var(--slate-200); border-radius: 8px;
+      padding: 10px; max-height: 130px; overflow-y: auto; margin-top: 8px;
+    }
+    .toast {
+      position: fixed; bottom: 20px; right: 20px; background: var(--slate-900);
+      color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 12px;
+      font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 50;
+    }
+    .toast.show { opacity: 1; }
+    .hidden { display: none !important; }
+    .banner-warn {
+      background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+      padding: 10px 16px; border-radius: 10px; font-size: 12px; display: none;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
 
-  <!-- Top Security & Identity Header -->
-  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-teal-400 shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-        </div>
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="brand-icon">+</div>
         <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">Analizador Diario de Censos Clínicos — EPS Sanitas</h1>
-          <p class="text-xs text-slate-400">Consolidación automatizada de Urgencias y Hospitalización (20 IPS)</p>
+          <h1>Analizador Diario de Censos Clínicos — EPS Sanitas</h1>
+          <p>Consolidación automatizada de Urgencias y Hospitalización (20 IPS)</p>
         </div>
       </div>
-
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          100% Local · Cero Exposición de Datos
-        </span>
-        <button onclick="exportAllToExcel()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-teal-600 hover:bg-teal-500 text-white transition shadow-sm cursor-pointer">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          Exportar Excel Consolidado
-        </button>
-        <button onclick="clearAllData()" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 border border-slate-700 transition cursor-pointer">
-          Limpiar Todo
-        </button>
+      <div class="header-actions">
+        <span class="badge-secure"><span class="dot-live"></span>100% Local · Cero Exposición</span>
+        <button class="btn btn-primary" onclick="exportAllToExcel()">Exportar Excel Consolidado</button>
+        <button class="btn btn-dark" onclick="clearAllData()">Limpiar Todo</button>
       </div>
     </div>
   </header>
 
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  <main class="container">
+    <div id="lib-warning" class="banner-warn">
+      <strong>Aviso de red institucional:</strong> Tu red bloqueó la descarga automática del lector de Excel/PDF externo. Si los archivos Excel no cargan, guarda tus censos como <strong>CSV (delimitado por comas)</strong> en Excel y súbelos aquí: la aplicación los leerá de forma 100% nativa sin depender de internet.
+    </div>
 
-    <!-- Clinical Rules Banner -->
-    <section class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div class="space-y-1">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded">Reglas de Extracción Activas</span>
-            <span class="text-xs text-slate-500">Solo <strong>EPS Sanitas</strong> (Excluye Colsanitas y Medisanitas MP)</span>
-          </div>
-          <div class="flex flex-wrap gap-1.5 pt-1">
-            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">Neumonía / J189</span>
-            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">IVU / N390</span>
-            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">Bronquitis / J218</span>
-            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">Pielonefritis / N11x / N111</span>
-            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">EPOC / Exacerbación / J456</span>
-            <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-
+    <!-- Reglas y KPIs -->
+    <section class="card rules-bar">
+      <div>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">
+          <span class="tag-rule">Reglas Activas</span>
+          <span style="font-size:12px; color:#475569;">Solo <strong>EPS Sanitas</strong> (Excluye MP Colsanitas y Medisanitas)</span>
+        </div>
+        <div class="dx-chips">
+          <span class="chip">Neumonía / J189</span>
+          <span class="chip">IVU / N390</span>
+          <span class="chip">Bronquitis / J218</span>
+          <span class="chip">Pielonefritis / N11x / N111</span>
+          <span class="chip">EPOC / Exacerbación / J456</span>
+          <span class="chip">Insuficiencia Cardiaca / I500</span>
+          <span class="chip">Celulitis / L03</span>
+          <span class="chip">Bronquiolitis / J219</span>
+        </div>
+      </div>
+
+      <div class="kpi-group">
+        <div class="kpi">
+          <div class="kpi-label">IPS Cargadas</div>
+          <div class="kpi-val"><span id="kpi-clinics">0</span><span style="font-size:12px;font-weight:400;">/20</span></div>
+        </div>
+        <div class="kpi urg">
+          <div class="kpi-label">Urgencias</div>
+          <div class="kpi-val" id="kpi-urg">0</div>
+        </div>
+        <div class="kpi hosp">
+          <div class="kpi-label">Hospitalización</div>
+          <div class="kpi-val" id="kpi-hosp">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel de 20 Clínicas -->
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>1. Carga Diaria por Institución (Excel .xlsx / .xls, CSV o PDF)</h2>
+          <p>Haz clic o arrastra el archivo en el espacio de cada clínica. Todo se procesa localmente en tu equipo.</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text" id="clinic-search" class="search-input" oninput="filterClinics()" placeholder="Filtrar clínica o ciudad..." />
+          <button class="btn btn-light" id="toggle-panel-btn" onclick="toggleClinicsPanel()">Contraer</button>
+        </div>
+      </div>
+      <div id="clinics-grid" class="clinics-grid"></div>
+    </section>
+
+    <!-- Tabla Urgencias -->
+    <section class="card">
+      <div class="section-head urg-head">
+        <div>
+          <h3>CUADRO 1: URGENCIAS (<span id="badge-urg">0</span>)</h3>
+          <p>Incluye: Urgencias, Observación, Transición — Solo EPS Sanitas (Excluye MP Colsanitas y Medisanitas)</p>
+        </div>
+        <button class="btn btn-light" onclick="copyTableToClipboard('urgencias')">Copiar Tabla Urgencias</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ciudad</th>
+              <th>Institución</th>
+              <th>Servicio / Cama / Registro / Habitación / Pabellón</th>
+              <th>Diagnóstico Principal</th>
+              <th style="text-align:center;">Días de Estancia</th>
+            </tr>
+          </thead>
+          <tbody id
