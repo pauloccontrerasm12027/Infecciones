@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monitor Diario de Estancias Clínicas - EPS Sanitas</title>
+  <title>Analizador Diario de Censos Clínicos — EPS Sanitas</title>
   <style>
     :root {
       --bg: #f4f7f9;
@@ -46,7 +46,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
     .container {
-      max-width: 1380px;
+      max-width: 1400px;
       width: 100%;
       margin: 0 auto;
       padding: 0 16px;
@@ -102,9 +102,18 @@
       color: var(--teal-700); background: var(--teal-50);
       padding: 3px 8px; border-radius: 4px; border: 1px solid var(--teal-100);
     }
-    .dx-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .filter-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .pill-btn {
+      font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
+      background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-300);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .pill-btn.active {
+      background: var(--teal-600); color: #fff; border-color: var(--teal-700);
+    }
+    .dx-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
     .chip {
-      font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 6px;
+      font-size: 10.5px; font-weight: 500; padding: 2px 7px; border-radius: 5px;
       background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200);
     }
     .kpi-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; min-width: 280px; }
@@ -235,22 +244,30 @@
       <strong>Aviso de red institucional:</strong> Tu red bloqueó la descarga automática del lector de Excel/PDF externo. Si los archivos Excel no cargan, guarda tus censos como <strong>CSV (delimitado por comas)</strong> en Excel y súbelos aquí: la aplicación los leerá de forma 100% nativa.
     </div>
 
-    <!-- Reglas y KPIs -->
+    <!-- Reglas, Filtro de Grupo y KPIs -->
     <section class="card rules-bar">
-      <div>
+      <div style="flex:1; min-width:300px;">
         <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">
           <span class="tag-rule">Reglas Activas</span>
           <span style="font-size:12px; color:#475569;">Solo <strong>EPS Sanitas</strong> (Excluye MP Colsanitas y Medisanitas)</span>
+        </div>
+        <div class="filter-pills">
+          <button class="pill-btn active" id="btn-grp-ALL" onclick="setGroupFilter('ALL')">Todos los Diagnósticos (Consolidado)</button>
+          <button class="pill-btn" id="btn-grp-INF" onclick="setGroupFilter('INF')">Infecciones / Respiratorio / Cardíaco</button>
+          <button class="pill-btn" id="btn-grp-LIT" onclick="setGroupFilter('LIT')">Litiasis Biliar-Urinaria / Fracturas</button>
         </div>
         <div class="dx-chips">
           <span class="chip">Neumonía / J189</span>
           <span class="chip">IVU / N390</span>
           <span class="chip">Bronquitis / J218</span>
-          <span class="chip">Pielonefritis / N11x / N111</span>
-          <span class="chip">EPOC / Exacerbación / J456</span>
-          <span class="chip">Insuficiencia Cardiaca / I500</span>
+          <span class="chip">Pielonefritis / N11x</span>
+          <span class="chip">EPOC / J456 / J44x</span>
+          <span class="chip">Insuf. Cardiaca / I500</span>
           <span class="chip">Celulitis / L03</span>
           <span class="chip">Bronquiolitis / J219</span>
+          <span class="chip">Colelitiasis-Colecistitis / K800–K819</span>
+          <span class="chip">Cálculo Renal-Uréter / N200–N209</span>
+          <span class="chip">Fractura Fémur-Tibia-Peroné / S72x–S82x–S840</span>
         </div>
       </div>
 
@@ -349,7 +366,7 @@
     <section class="card" style="padding:14px 18px;">
       <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b;">Bitácora de Auditoría Local</div>
       <div id="audit-log" class="audit-box">
-        <div>Sistema listo. Soporte activo para múltiples archivos (Excel, CSV o PDF) por cada clínica.</div>
+        <div>Sistema listo. Soporte activo para todos los diagnósticos clínicos y carga múltiple por IPS.</div>
       </div>
     </section>
   </main>
@@ -393,9 +410,9 @@
       { id: 'sanjuandedios', name: 'Hospital San Juan de Dios', city: 'Pamplona' }
     ];
 
-    // State per clinic: { files: [ { id, fileName, sanitasCount, records: [] } ] }
     const clinicState = {};
     let panelExpanded = true;
+    let activeGroupFilter = 'ALL';
 
     function norm(str) {
       if (str === null || str === undefined) return '';
@@ -419,6 +436,15 @@
       box.prepend(line);
     }
 
+    function setGroupFilter(grp) {
+      activeGroupFilter = grp;
+      ['ALL', 'INF', 'LIT'].forEach(k => {
+        document.getElementById(`btn-grp-${k}`)?.classList.toggle('active', k === grp);
+      });
+      renderClinicCards();
+      renderConsolidatedTables();
+    }
+
     function toggleClinicsPanel() {
       panelExpanded = !panelExpanded;
       const grid = document.getElementById('clinics-grid');
@@ -437,6 +463,11 @@
       });
     }
 
+    function matchesActiveFilter(r) {
+      if (activeGroupFilter === 'ALL') return true;
+      return r.group === activeGroupFilter;
+    }
+
     function renderClinicCards() {
       const grid = document.getElementById('clinics-grid');
       grid.innerHTML = CLINICS.map(c => {
@@ -444,18 +475,21 @@
         const files = st?.files || [];
         const loaded = files.length > 0;
 
-        const filesHtml = files.map((f, idx) => `
-          <div class="file-info">
-            <div class="file-head">
-              <div class="file-name" title="${escapeHtml(f.fileName)}">📄 ${escapeHtml(f.fileName)}</div>
-              <button class="btn-remove" onclick="removeSingleFile('${c.id}', ${idx})" title="Quitar este archivo">✕</button>
+        const filesHtml = files.map((f, idx) => {
+          const filteredCount = f.records.filter(matchesActiveFilter).length;
+          return `
+            <div class="file-info">
+              <div class="file-head">
+                <div class="file-name" title="${escapeHtml(f.fileName)}">📄 ${escapeHtml(f.fileName)}</div>
+                <button class="btn-remove" onclick="removeSingleFile('${c.id}', ${idx})" title="Quitar este archivo">✕</button>
+              </div>
+              <div class="file-stats">
+                <span>Sanitas: <strong>${f.sanitasCount}</strong></span>
+                <span class="pill-count">Extraídos: ${filteredCount}</span>
+              </div>
             </div>
-            <div class="file-stats">
-              <span>Sanitas: <strong>${f.sanitasCount}</strong></span>
-              <span class="pill-count">Extraídos: ${f.records.length}</span>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
         return `
           <div id="card-${c.id}"
@@ -468,7 +502,7 @@
                 <span class="city-badge">${c.city}</span>
                 <div class="clinic-title" title="${c.name}">${c.name}</div>
               </div>
-              ${loaded ? `<button class="btn-remove" onclick="removeClinicAllFiles('${c.id}')" title="Quitar todos los archivos de esta clínica">Limpiar</button>` : ''}
+              ${loaded ? `<button class="btn-remove" onclick="removeClinicAllFiles('${c.id}')" title="Quitar archivos">Limpiar</button>` : ''}
             </div>
 
             ${loaded ? `
@@ -511,9 +545,7 @@
     function removeSingleFile(clinicId, fileIdx) {
       if (!clinicState[clinicId]) return;
       const removed = clinicState[clinicId].files.splice(fileIdx, 1)[0];
-      if (clinicState[clinicId].files.length === 0) {
-        delete clinicState[clinicId];
-      }
+      if (clinicState[clinicId].files.length === 0) delete clinicState[clinicId];
       renderClinicCards();
       renderConsolidatedTables();
       if (removed) logAudit(`Archivo quitado: ${removed.fileName}`);
@@ -546,14 +578,19 @@
     }
 
     const DX_RULES = [
-      { label: 'Neumonía', codes: ['J189', 'J180', 'J181', 'J182', 'J188', 'J15', 'J12', 'J13', 'J14', 'J16', 'J17', 'J851'], words: ['NEUMONIA', 'BRONCONEUMONIA'] },
-      { label: 'Infección vías urinarias', codes: ['N390'], words: ['INFECCION DE VIAS URINARIAS', 'INFECCION VIAS URINARIAS', 'INFECCION URINARIA'] },
-      { label: 'Bronquitis', codes: ['J218', 'J20', 'J40', 'J41', 'J42'], words: ['BRONQUITIS'] },
-      { label: 'Pielonefritis', codes: ['N11', 'N110', 'N111', 'N118', 'N119', 'N10', 'N12'], words: ['PIELONEFRITIS'] },
-      { label: 'EPOC / Exacerbación', codes: ['J456', 'J44', 'J440', 'J441', 'J448', 'J449'], words: ['EPOC', 'EXACERBACION', 'OBSTRUCTIVA CRONICA'] },
-      { label: 'Insuficiencia cardiaca', codes: ['I500', 'I50', 'I501', 'I509', 'I110'], words: ['INSUFICIENCIA CARDIACA', 'FALLA CARDIACA'] },
-      { label: 'Celulitis', codes: ['L03', 'L030', 'L031', 'L032', 'L033', 'L038', 'L039'], words: ['CELULITIS'] },
-      { label: 'Bronquiolitis', codes: ['J219', 'J21', 'J210'], words: ['BRONQUIOLITIS'] }
+      // Grupo 1: Infecciones / Respiratorio / Cardíaco (INF)
+      { group: 'INF', label: 'Neumonía', codes: ['J189', 'J180', 'J181', 'J182', 'J188', 'J15', 'J12', 'J13', 'J14', 'J16', 'J17', 'J851'], words: ['NEUMONIA', 'BRONCONEUMONIA'] },
+      { group: 'INF', label: 'Infección vías urinarias', codes: ['N390'], words: ['INFECCION DE VIAS URINARIAS', 'INFECCION VIAS URINARIAS', 'INFECCION URINARIA'] },
+      { group: 'INF', label: 'Bronquitis', codes: ['J218', 'J20', 'J40', 'J41', 'J42'], words: ['BRONQUITIS'] },
+      { group: 'INF', label: 'Pielonefritis', codes: ['N11', 'N110', 'N111', 'N118', 'N119', 'N10', 'N12'], words: ['PIELONEFRITIS'] },
+      { group: 'INF', label: 'EPOC / Exacerbación', codes: ['J456', 'J44', 'J440', 'J441', 'J448', 'J449'], words: ['EPOC', 'EXACERBACION', 'OBSTRUCTIVA CRONICA'] },
+      { group: 'INF', label: 'Insuficiencia cardiaca', codes: ['I500', 'I50', 'I501', 'I509', 'I110'], words: ['INSUFICIENCIA CARDIACA', 'FALLA CARDIACA'] },
+      { group: 'INF', label: 'Celulitis', codes: ['L03', 'L030', 'L031', 'L032', 'L033', 'L038', 'L039'], words: ['CELULITIS'] },
+      { group: 'INF', label: 'Bronquiolitis', codes: ['J219', 'J21', 'J210'], words: ['BRONQUIOLITIS'] },
+      // Grupo 2: Litiasis Biliar-Urinaria / Fracturas Fémur-Tibia-Peroné (LIT)
+      { group: 'LIT', label: 'Colelitiasis / Colecistitis', codes: ['K800', 'K801', 'K802', 'K804', 'K805', 'K808', 'K810', 'K811', 'K818', 'K819'], words: ['CALCULO DE LA VESICULA BILIAR', 'CALCULO DE CONDUCTO BILIAR', 'OTRAS COLELITIASIS', 'COLECISTITIS AGUDA', 'COLECISTITIS CRONICA', 'OTRAS COLECISTITIS', 'COLECISTITIS, NO ESPECIFICADA', 'COLECISTITIS NO ESPECIFICADA'] },
+      { group: 'LIT', label: 'Litiasis urinaria', codes: ['N200', 'N201', 'N202', 'N209'], words: ['CALCULO DEL RINON', 'CALCULO DEL URETER', 'CALCULO URINARIO'] },
+      { group: 'LIT', label: 'Fractura / Trauma Fémur-Tibia-Peroné', codes: ['S824', 'S821', 'S822', 'S823', 'S840', 'S720', 'S723', 'S724', 'S727', 'S728', 'S729'], words: ['FRACTURA DEL PERONE SOLAMENTE', 'FRACTURA DE LA EPIFISIS SUPERIOR DE LA TIBIA', 'FRACTURA DE LA DIAFISIS DE LA TIBIA', 'FRACTURA DE LA EPIFISIS INFERIOR DE LA TIBIA', 'TRAUMATISMO DEL NERVIO TIBIAL', 'FRACTURA DEL CUELLO DEL FEMUR', 'FRACTURA DEL CUELLO DE FEMUR', 'FRACTURA DE LA DIAFISIS DEL FEMUR', 'FRACTURA DE LA EPIFISIS INFERIOR DEL FEMUR', 'FRACTURAS MULTIPLES DEL FEMUR', 'FRACTURAS DE OTRAS PARTES DEL FEMUR', 'FRACTURA DEL FEMUR'] }
     ];
 
     function matchDiagnosis(text) {
@@ -562,10 +599,10 @@
       for (const rule of DX_RULES) {
         for (const code of rule.codes) {
           const rx = new RegExp(`(^|[^A-Z0-9])${code}([A-Z0-9]?)(?=$|[^A-Z0-9])`);
-          if (rx.test(s)) return rule.label;
+          if (rx.test(s)) return rule;
         }
         for (const w of rule.words) {
-          if (s.includes(w)) return rule.label;
+          if (s.includes(w)) return rule;
         }
       }
       return null;
@@ -625,4 +662,234 @@
 
     function parseCsvRows(text) {
       const sep = text.includes(';') ? ';' : ',';
-      return text.split(/\r?\n/).map(line => line.split(
+      return text.split(/\r?\n/).map(line => line.split(sep).map(cell => cell.replace(/^"|"$/g, '').trim()));
+    }
+
+    async function processMultipleFiles(clinicId, fileList) {
+      for (const file of Array.from(fileList)) {
+        await processClinicFile(clinicId, file);
+      }
+    }
+
+    async function processClinicFile(clinicId, file) {
+      const clinic = CLINICS.find(c => c.id === clinicId);
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      try {
+        let extracted = { sanitasCount: 0, records: [] };
+
+        if (ext === 'pdf') {
+          if (!window.pdfjsLib) throw new Error('Lector PDF bloqueado por la red institucional.');
+          extracted = await parsePdfFile(clinic, file);
+        } else if (ext === 'csv') {
+          const txt = await file.text();
+          extracted = parseMatrixRows(clinic, parseCsvRows(txt));
+        } else {
+          if (!window.XLSX) throw new Error('Lector Excel bloqueado por la red. Guarda el archivo como .CSV en Excel y súbelo aquí.');
+          const buffer = await file.arrayBuffer();
+          const wb = XLSX.read(buffer, { type: 'array' });
+          for (const sheetName of wb.SheetNames) {
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: '' });
+            const res = parseMatrixRows(clinic, rows);
+            extracted.sanitasCount += res.sanitasCount;
+            extracted.records.push(...res.records);
+          }
+        }
+
+        if (!clinicState[clinicId]) clinicState[clinicId] = { files: [] };
+
+        const existingIdx = clinicState[clinicId].files.findIndex(f => f.fileName === file.name);
+        const fileEntry = {
+          fileName: file.name,
+          sanitasCount: extracted.sanitasCount,
+          records: extracted.records
+        };
+
+        if (existingIdx >= 0) clinicState[clinicId].files[existingIdx] = fileEntry;
+        else clinicState[clinicId].files.push(fileEntry);
+
+        renderClinicCards();
+        renderConsolidatedTables();
+        logAudit(`${clinic.name} (${clinic.city}) [${file.name}]: ${extracted.records.length} extraídos de ${extracted.sanitasCount} registros EPS Sanitas.`);
+        showToast(`${clinic.name}: ${extracted.records.length} extraídos`);
+      } catch (err) {
+        logAudit(`Error en ${clinic.name} (${file.name}): ${err.message}`, 'err');
+        showToast(err.message);
+      }
+    }
+
+    function parseMatrixRows(clinic, rows) {
+      const records = [];
+      let sanitasCount = 0;
+      if (!rows || rows.length === 0) return { sanitasCount, records };
+
+      let headerIdx = -1;
+      let colMap = {};
+
+      for (let i = 0; i < Math.min(rows.length, 15); i++) {
+        const rNorm = rows[i].map(cell => norm(cell));
+        const hasDoc = rNorm.some(h => h.includes('DOCUMENTO') || h.includes('IDENTIFICACION') || h === 'ID' || h.includes('CEDULA'));
+        const hasDx = rNorm.some(h => h.includes('DIAGNOSTICO') || h === 'DX' || h === 'CIE10' || h === 'UTL_DX');
+        const hasBedOrSrv = rNorm.some(h => h.includes('CAMA') || h.includes('HABITACION') || h.includes('SERVICIO') || h.includes('UBICACION') || h.includes('ESTACION') || h.includes('INGRESO') || h.includes('ATENCION') || h.includes('REGISTRO'));
+
+        if ((hasDoc || hasBedOrSrv) && (hasDx || rNorm.length >= 6)) {
+          headerIdx = i;
+          rNorm.forEach((h, idx) => {
+            if (colMap.paciente === undefined && (h === 'PACIENTE' || h.includes('NOMBRE PACIENTE') || h.includes('NOMBRE DEL PACIENTE') || h.includes('NOMBRE_PACIENTE') || h === 'PACIENTENOMBRE' || h === 'NOMBRES')) colMap.paciente = idx;
+            if (colMap.apellidos === undefined && h === 'APELLIDOS') colMap.apellidos = idx;
+            if (colMap.atencion === undefined && (h === 'ATENCION' || h === 'INGRESO' || h === 'NO INGRESO' || h === 'NO. INGRESO' || h === 'REGISTRO')) colMap.atencion = idx;
+            if (colMap.cama === undefined && (h.includes('CAMA') || h.includes('HABITACION'))) colMap.cama = idx;
+            if (colMap.servicio === undefined && (h.includes('SERVICIO') || h.includes('UBICACION') || h.includes('ESTACION') || h.includes('GRUPO') || h.includes('PABELLON') || h.includes('HSUNOMBRE') || h.includes('UNIDAD FUNCIONAL'))) colMap.servicio = idx;
+            if (colMap.piso === undefined && (h.includes('PISO') || h.includes('SECTOR'))) colMap.piso = idx;
+            if (colMap.tipoDoc === undefined && (h.includes('TIPO DOC') || h === 'T.D.' || h === 'T. DOCUMENTO' || h === 'TIPO_DOCUMENTO')) colMap.tipoDoc = idx;
+            if (colMap.doc === undefined && (h.includes('DOCUMENTO') || h.includes('IDENTIFICACION') || h === 'ID' || h === 'CEDULA')) colMap.doc = idx;
+            if (colMap.entidad === undefined && (h.includes('ENTIDAD') || h.includes('EMPRESA') || h.includes('CONTRATO') || h === 'EPS' || h.includes('TERCERO') || h === 'PLAN')) colMap.entidad = idx;
+            if (colMap.entidad2 === undefined && (h === 'ENTIDAD 2' || h === 'PLAN B.' || h === 'NOMBREPLAN')) colMap.entidad2 = idx;
+            if (colMap.cie === undefined && (h === 'CIE10' || h.includes('CODIGO') || h === 'DX. INICIAL' || h === 'DIAGNOSTICOINGRESO')) colMap.cie = idx;
+            if (colMap.dx === undefined && (h.includes('DIAGNOSTICO') || h === 'UTL_DX' || h === 'NOMBREDIAGNOSTICO')) colMap.dx = idx;
+            if (colMap.dxSec === undefined && h.includes('SECUNDARIO')) colMap.dxSec = idx;
+            if (colMap.dias === undefined && (h.includes('DIAS') || h.includes('ESTANCIA') || h === 'D.S.' || h === 'TIEMPO')) colMap.dias = idx;
+            if (colMap.fechaIng === undefined && h.includes('FECHA') && h.includes('INGRESO')) colMap.fechaIng = idx;
+            if (colMap.fechaSal === undefined && h.includes('SALIDA')) colMap.fechaSal = idx;
+          });
+          break;
+        }
+      }
+
+      let currentGroupHeader = '';
+      const startRow = headerIdx >= 0 ? headerIdx + 1 : 0;
+
+      for (let i = startRow; i < rows.length; i++) {
+        const row = rows[i];
+        const nonEmpty = row.filter(c => String(c).trim() !== '');
+        if (nonEmpty.length === 0) continue;
+
+        if (nonEmpty.length <= 2) {
+          const banner = String(nonEmpty[0]).trim();
+          if (banner.includes('Total Pacientes:') || norm(banner).startsWith('PABELLON')) {
+            currentGroupHeader = banner.split('-  Total Pacientes:')[0].trim();
+            continue;
+          }
+        }
+
+        if (colMap.fechaSal !== undefined) {
+          const sal = String(row[colMap.fechaSal] || '').trim();
+          if (sal && sal !== '1/01/0001 12:00:00 a. m.' && !sal.startsWith('0001')) continue;
+        }
+
+        const rowJoined = row.map(c => String(c)).join(' | ');
+        let payerText = '';
+        if (colMap.entidad !== undefined) payerText += ' ' + String(row[colMap.entidad] || '');
+        if (colMap.entidad2 !== undefined) payerText += ' ' + String(row[colMap.entidad2] || '');
+        if (!payerText.trim()) payerText = rowJoined;
+
+        if (colMap.entidad !== undefined && hasExcludedMP(row[colMap.entidad])) continue;
+        if (!isValidSanitas(payerText)) continue;
+
+        sanitasCount++;
+
+        let cieVal = colMap.cie !== undefined ? String(row[colMap.cie] || '').trim() : '';
+        let dxVal = colMap.dx !== undefined ? String(row[colMap.dx] || '').trim() : '';
+        let dxSecVal = colMap.dxSec !== undefined ? String(row[colMap.dxSec] || '').trim() : '';
+
+        if (colMap.cie !== undefined && colMap.dx === colMap.cie && row[colMap.cie + 1]) {
+          dxVal = String(row[colMap.cie + 1] || '').trim();
+        }
+
+        let primaryCombined = [cieVal, dxVal].filter(Boolean).join(' - ');
+        if (!primaryCombined) primaryCombined = rowJoined;
+
+        const rulePrimary = matchDiagnosis(primaryCombined);
+        const ruleSecondary = !rulePrimary && dxSecVal ? matchDiagnosis(dxSecVal) : null;
+        const matchedRule = rulePrimary || ruleSecondary;
+        if (!matchedRule) continue;
+
+        let pacName = colMap.paciente !== undefined ? String(row[colMap.paciente] || '').trim() : '';
+        if (colMap.apellidos !== undefined && row[colMap.apellidos]) {
+          pacName = `${pacName} ${String(row[colMap.apellidos]).trim()}`.trim();
+        }
+        if (!pacName) pacName = 'No registra';
+
+        const rawDoc = colMap.doc !== undefined ? String(row[colMap.doc] || '').trim() : '';
+        const rawTipo = colMap.tipoDoc !== undefined ? String(row[colMap.tipoDoc] || '').trim() : '';
+        const { tipoId, numId } = splitDocId(rawTipo, rawDoc);
+
+        const atenStr = colMap.atencion !== undefined ? String(row[colMap.atencion] || '').trim() : '';
+        const camaStr = colMap.cama !== undefined ? String(row[colMap.cama] || '').trim() : '';
+        const srvStr = colMap.servicio !== undefined ? String(row[colMap.servicio] || '').trim() : currentGroupHeader;
+        const pisoStr = colMap.piso !== undefined ? String(row[colMap.piso] || '').trim() : '';
+
+        const locParts = [];
+        if (currentGroupHeader && !norm(srvStr).includes(norm(currentGroupHeader))) locParts.push(currentGroupHeader);
+        if (srvStr) locParts.push(srvStr);
+        if (pisoStr && !norm(srvStr).includes(norm(pisoStr))) locParts.push(pisoStr);
+        if (camaStr) locParts.push(`Cama ${camaStr}`);
+        if (atenStr && atenStr !== numId) locParts.push(`Ing/Reg ${atenStr}`);
+
+        const servicioCama = locParts.join(' / ') || 'Sin ubicación especificada';
+
+        let dias = 0;
+        if (colMap.dias !== undefined && row[colMap.dias] !== '') {
+          const rawD = String(row[colMap.dias]).trim();
+          const dMatch = rawD.match(/^(\d+)\s*d/i);
+          if (dMatch) dias = parseInt(dMatch[1], 10);
+          else if (!isNaN(Number(rawD))) dias = Math.max(0, Math.round(Number(rawD)));
+        } else if (colMap.fechaIng !== undefined) {
+          dias = calcDaysFromDate(row[colMap.fechaIng]);
+        }
+
+        const finalDx = rulePrimary ? primaryCombined : `${primaryCombined} (Secundario: ${dxSecVal})`;
+        const area = classifyArea(`${currentGroupHeader} ${srvStr} ${camaStr}`);
+
+        records.push({
+          ciudad: clinic.city,
+          institucion: clinic.name,
+          paciente: pacName,
+          tipoId,
+          numId,
+          diagnostico: finalDx,
+          servicioCama,
+          dias,
+          area,
+          group: matchedRule.group
+        });
+      }
+
+      return { sanitasCount, records };
+    }
+
+    async function parsePdfFile(clinic, file) {
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      let fullText = '';
+      for (let p = 1; p <= pdf.numPages; p++) {
+        const page = await pdf.getPage(p);
+        const content = await page.getTextContent();
+        fullText += '\n' + content.items.map(it => it.str).join(' ');
+      }
+      const records = [];
+      let sanitasCount = 0;
+      const tokens = fullText.split(/\s+/);
+      let currentBlock = [];
+      const blocks = [];
+      for (const tok of tokens) {
+        if (/^\d{7,14}$/.test(tok) && currentBlock.length > 6) {
+          blocks.push(currentBlock.join(' '));
+          currentBlock = [tok];
+        } else {
+          currentBlock.push(tok);
+        }
+      }
+      if (currentBlock.length > 0) blocks.push(currentBlock.join(' '));
+
+      for (const blk of blocks) {
+        if (hasExcludedMP(blk)) continue;
+        const mentionsOtherEps = /\b(NUEVA EPS|COOSALUD|SALUD TOTAL|FAMISANAR|ASMET|COMFAORIENTE|SOAT|PREVISORA)\b/.test(norm(blk));
+        if (mentionsOtherEps && !isValidSanitas(blk)) continue;
+        sanitasCount++;
+        const matchedRule = matchDiagnosis(blk);
+        if (!matchedRule) continue;
+
+        const docMatch = blk.match(/\b(\d{6,14})\b/);
+        const nameMatch = blk.match(/\b\d{6,14}\s+([A-ZÁÉÍÓÚÑ\s]{6,45}?)(?=\s+\d|\s+M\b|\s+F\b|\s+AÑO|\s+MES|\s+DIA)/i);
+        const habMatch = blk.match(/\b(HAB\.?\s*\d+[A-Z]?|CAMA\
