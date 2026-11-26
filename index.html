@@ -244,7 +244,6 @@
       <strong>Aviso de red institucional:</strong> Tu red bloqueó la descarga automática del lector de Excel/PDF externo. Si los archivos Excel no cargan, guarda tus censos como <strong>CSV (delimitado por comas)</strong> en Excel y súbelos aquí: la aplicación los leerá de forma 100% nativa.
     </div>
 
-    <!-- Reglas, Filtro de Grupo y KPIs -->
     <section class="card rules-bar">
       <div style="flex:1; min-width:300px;">
         <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">
@@ -287,7 +286,6 @@
       </div>
     </section>
 
-    <!-- Panel de 20 Clínicas -->
     <section class="card">
       <div class="section-head">
         <div>
@@ -302,7 +300,6 @@
       <div id="clinics-grid" class="clinics-grid"></div>
     </section>
 
-    <!-- Tabla Urgencias -->
     <section class="card">
       <div class="section-head urg-head">
         <div>
@@ -332,7 +329,6 @@
       </div>
     </section>
 
-    <!-- Tabla Hospitalización -->
     <section class="card">
       <div class="section-head hosp-head">
         <div>
@@ -362,7 +358,6 @@
       </div>
     </section>
 
-    <!-- Bitácora -->
     <section class="card" style="padding:14px 18px;">
       <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b;">Bitácora de Auditoría Local</div>
       <div id="audit-log" class="audit-box">
@@ -373,20 +368,7 @@
 
   <div id="toast" class="toast">Acción completada</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-
   <script>
-    window.addEventListener('load', function() {
-      if (!window.XLSX) {
-        document.getElementById('lib-warning').style.display = 'block';
-        logAudit('Aviso: Red bloqueó CDN de Excel. Modo CSV nativo activo.', 'warn');
-      }
-      if (window.pdfjsLib) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-      }
-    });
-
     var CLINICS = [
       { id: 'fcv', name: 'Fundación Cardiovascular de Colombia', city: 'Floridablanca' },
       { id: 'hic', name: 'Hospital Internacional', city: 'Piedecuesta' },
@@ -913,4 +895,198 @@
       var pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
       var fullText = '';
       for (var p = 1; p <= pdf.numPages; p++) {
-        var page = await pdf.getPage(
+        var page = await pdf.getPage(p);
+        var content = await page.getTextContent();
+        fullText += '\n' + content.items.map(function(it) { return it.str; }).join(' ');
+      }
+      var records = [];
+      var sanitasCount = 0;
+      var tokens = fullText.split(/\s+/);
+      var currentBlock = [];
+      var blocks = [];
+      for (var t = 0; t < tokens.length; t++) {
+        var tok = tokens[t];
+        if (/^\d{7,14}$/.test(tok) && currentBlock.length > 6) {
+          blocks.push(currentBlock.join(' '));
+          currentBlock = [tok];
+        } else {
+          currentBlock.push(tok);
+        }
+      }
+      if (currentBlock.length > 0) blocks.push(currentBlock.join(' '));
+
+      for (var b = 0; b < blocks.length; b++) {
+        var blk = blocks[b];
+        if (hasExcludedMP(blk)) continue;
+        var mentionsOtherEps = /\b(NUEVA EPS|COOSALUD|SALUD TOTAL|FAMISANAR|ASMET|COMFAORIENTE|SOAT|PREVISORA)\b/.test(norm(blk));
+        if (mentionsOtherEps && !isValidSanitas(blk)) continue;
+        sanitasCount++;
+        var matchedRule = matchDiagnosis(blk);
+        if (!matchedRule) continue;
+
+        var docMatch = blk.match(/\b(\d{6,14})\b/);
+        var nameMatch = blk.match(/\b\d{6,14}\s+([A-ZÁÉÍÓÚÑ\s]{6,45}?)(?=\s+\d|\s+M\b|\s+F\b|\s+AÑO|\s+MES|\s+DIA)/i);
+        var habMatch = blk.match(/\b(HAB\.?\s*\d+[A-Z]?|CAMA\s*\d+[A-Z]?|CUN\d+|UCP\d+|INT\d+|UCI\d+|HOS\w+|OBS\w+)\b/i);
+        var dateMatch = blk.match(/\b(\d{2}\/\d{2}\/\d{4})\b/);
+
+        var docId = docMatch ? docMatch[1] : 'No registra';
+        var pacName = nameMatch ? nameMatch[1].trim() : 'No registra';
+        var hab = habMatch ? habMatch[0] : 'Hospitalización / Piso';
+        var dias = dateMatch ? calcDaysFromDate(dateMatch[1]) : 0;
+
+        records.push({
+          ciudad: clinic.city,
+          institucion: clinic.name,
+          paciente: pacName,
+          tipoId: 'No registra',
+          numId: docId,
+          diagnostico: matchedRule.label,
+          servicioCama: hab,
+          dias: dias,
+          area: classifyArea(hab),
+          group: matchedRule.group
+        });
+      }
+      return { sanitasCount: sanitasCount, records: records };
+    }
+
+    function getConsolidatedData() {
+      var urg = [], hosp = [];
+      var seenKeys = {};
+
+      Object.keys(clinicState).forEach(function(cid) {
+        var st = clinicState[cid];
+        (st.files || []).forEach(function(f) {
+          f.records.filter(matchesActiveFilter).forEach(function(r) {
+            var dedupKey = r.institucion + '|' + r.numId + '|' + r.diagnostico + '|' + r.servicioCama;
+            if (r.numId !== 'No registra' && seenKeys[dedupKey]) return;
+            seenKeys[dedupKey] = true;
+
+            if (r.area === 'URGENCIAS') urg.push(r);
+            else hosp.push(r);
+          });
+        });
+      });
+
+      var sorter = function(a, b) {
+        return a.ciudad.localeCompare(b.ciudad, 'es') ||
+               a.institucion.localeCompare(b.institucion, 'es') ||
+               a.paciente.localeCompare(b.paciente, 'es');
+      };
+      urg.sort(sorter);
+      hosp.sort(sorter);
+      return { urg: urg, hosp: hosp };
+    }
+
+    function renderConsolidatedTables() {
+      var data = getConsolidatedData();
+      var urg = data.urg;
+      var hosp = data.hosp;
+      var loadedIpsCount = Object.keys(clinicState).filter(function(cid) {
+        return clinicState[cid].files && clinicState[cid].files.length > 0;
+      }).length;
+
+      document.getElementById('kpi-clinics').textContent = loadedIpsCount;
+      document.getElementById('kpi-urg').textContent = urg.length;
+      document.getElementById('kpi-hosp').textContent = hosp.length;
+      document.getElementById('badge-urg').textContent = urg.length;
+      document.getElementById('badge-hosp').textContent = hosp.length;
+
+      renderTableBody('tbody-urgencias', urg, 'Sin pacientes de EPS Sanitas con los diagnósticos filtrados en Urgencias.');
+      renderTableBody('tbody-hospitalizacion', hosp, 'Sin pacientes de EPS Sanitas con los diagnósticos filtrados en Hospitalización.');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function renderTableBody(tbodyId, list, emptyMsg) {
+      var tbody = document.getElementById(tbodyId);
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-row">' + emptyMsg + '</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(function(r) {
+        return '<tr>' +
+          '<td style="font-weight:600; white-space:nowrap;">' + escapeHtml(r.ciudad) + '</td>' +
+          '<td style="font-weight:500;">' + escapeHtml(r.institucion) + '</td>' +
+          '<td style="font-weight:600; color:#0f172a;">' + escapeHtml(r.paciente) + '</td>' +
+          '<td style="white-space:nowrap;">' + escapeHtml(r.tipoId) + '</td>' +
+          '<td style="white-space:nowrap;">' + escapeHtml(r.numId) + '</td>' +
+          '<td style="font-weight:600; color:#115e59;">' + escapeHtml(r.diagnostico) + '</td>' +
+          '<td>' + escapeHtml(r.servicioCama) + '</td>' +
+          '<td style="text-align:center;"><span class="days-pill ' + (r.dias >= 7 ? 'high' : '') + '">' + r.dias + '</span></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function copyTableToClipboard(type) {
+      var data = getConsolidatedData();
+      var rows = type === 'urgencias' ? data.urg : data.hosp;
+      if (rows.length === 0) return showToast('No hay datos para copiar en esta tabla');
+      var header = ['Ciudad', 'Institución', 'Paciente', 'Tipo ID', 'Número ID', 'Diagnóstico Principal', 'Servicio / Cama', 'Días Estancia'].join('\t');
+      var body = rows.map(function(r) {
+        return [r.ciudad, r.institucion, r.paciente, r.tipoId, r.numId, r.diagnostico, r.servicioCama, r.dias].join('\t');
+      }).join('\n');
+      navigator.clipboard.writeText(header + '\n' + body).then(function() {
+        showToast('Tabla de ' + (type === 'urgencias' ? 'Urgencias' : 'Hospitalización') + ' copiada');
+      });
+    }
+
+    function exportAllToExcel() {
+      var data = getConsolidatedData();
+      var urg = data.urg;
+      var hosp = data.hosp;
+      if (urg.length === 0 && hosp.length === 0) return showToast('Carga al menos un archivo antes de exportar');
+      var today = new Date().toISOString().slice(0, 10);
+
+      if (window.XLSX) {
+        var mapRow = function(r) {
+          return {
+            'Ciudad': r.ciudad,
+            'Institución': r.institucion,
+            'Paciente': r.paciente,
+            'Tipo ID': r.tipoId,
+            'Número ID': r.numId,
+            'Diagnóstico Principal': r.diagnostico,
+            'Servicio / Cama': r.servicioCama,
+            'Días Estancia': r.dias
+          };
+        };
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(urg.length ? urg.map(mapRow) : [{ 'Mensaje': 'Sin registros' }]), 'Urgencias');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(hosp.length ? hosp.map(mapRow) : [{ 'Mensaje': 'Sin registros' }]), 'Hospitalizacion');
+        XLSX.writeFile(wb, 'Consolidado_EPS_Sanitas_' + today + '.xlsx');
+        showToast('Excel consolidado descargado');
+      } else {
+        var lines = ['AREA;Ciudad;Institucion;Paciente;Tipo ID;Numero ID;Diagnostico Principal;Servicio / Cama;Dias Estancia'];
+        urg.forEach(function(r) { lines.push('URGENCIAS;' + r.ciudad + ';' + r.institucion + ';' + r.paciente + ';' + r.tipoId + ';' + r.numId + ';' + r.diagnostico + ';' + r.servicioCama + ';' + r.dias); });
+        hosp.forEach(function(r) { lines.push('HOSPITALIZACION;' + r.ciudad + ';' + r.institucion + ';' + r.paciente + ';' + r.tipoId + ';' + r.numId + ';' + r.diagnostico + ';' + r.servicioCama + ';' + r.dias); });
+        var blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Consolidado_EPS_Sanitas_' + today + '.csv';
+        link.click();
+        showToast('CSV consolidado descargado');
+      }
+    }
+
+    // Dibujar las 20 tarjetas inmediatamente antes de cargar librerías externas
+    renderClinicCards();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script>
+    window.addEventListener('load', function() {
+      if (!window.XLSX) {
+        document.getElementById('lib-warning').style.display = 'block';
+        logAudit('Aviso: Red bloqueó CDN de Excel. Modo CSV nativo activo.', 'warn');
+      }
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      }
+    });
+  </script>
+</body>
+</html>
