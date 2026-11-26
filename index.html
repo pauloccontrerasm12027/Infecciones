@@ -20,6 +20,10 @@
       --teal-600: #0d9488;
       --teal-100: #ccfbf1;
       --teal-50: #f0fdfa;
+      --blue-800: #1e40af;
+      --blue-600: #2563eb;
+      --blue-100: #dbeafe;
+      --blue-50: #eff6ff;
       --amber-800: #92400e;
       --amber-100: #fef3c7;
       --amber-50: #fffbeb;
@@ -46,7 +50,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
     .container {
-      max-width: 1400px;
+      max-width: 1420px;
       width: 100%;
       margin: 0 auto;
       padding: 0 16px;
@@ -78,17 +82,19 @@
     }
     .dot-live { width: 8px; height: 8px; border-radius: 50%; background: #34d399; }
     .btn {
-      border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px;
-      font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      border: none; border-radius: 8px; padding: 7px 12px; font-size: 11.5px;
+      font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
       transition: background 0.15s;
     }
     .btn-primary { background: var(--teal-600); color: #fff; }
     .btn-primary:hover { background: var(--teal-700); }
+    .btn-cie { background: #1e3a8a; color: #dbeafe; border: 1px solid #3b82f6; }
+    .btn-cie:hover { background: #1d4ed8; color: #fff; }
     .btn-dark { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
     .btn-dark:hover { background: #7f1d1d; color: #fecdd3; }
     .btn-light { background: #fff; color: var(--slate-700); border: 1px solid var(--slate-300); }
     .btn-light:hover { background: var(--slate-100); }
-    main { flex: 1; padding: 20px 0 40px; display: flex; flex-direction: column; gap: 20px; }
+    main { flex: 1; padding: 20px 0 40px; display: flex; flex-direction: column; gap: 22px; }
     .card {
       background: var(--surface); border: 1px solid var(--slate-200);
       border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); overflow: hidden;
@@ -102,38 +108,47 @@
       color: var(--teal-700); background: var(--teal-50);
       padding: 3px 8px; border-radius: 4px; border: 1px solid var(--teal-100);
     }
-    .filter-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .pill-btn {
-      font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
-      background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-300);
-      cursor: pointer; transition: all 0.15s;
-    }
-    .pill-btn.active {
-      background: var(--teal-600); color: #fff; border-color: var(--teal-700);
+    .tag-cie {
+      font-size: 11px; font-weight: 600;
+      color: var(--blue-800); background: var(--blue-50);
+      padding: 3px 8px; border-radius: 4px; border: 1px solid #bfdbfe;
     }
     .dx-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
     .chip {
       font-size: 10.5px; font-weight: 500; padding: 2px 7px; border-radius: 5px;
       background: var(--slate-100); color: var(--slate-700); border: 1px solid var(--slate-200);
     }
-    .kpi-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; min-width: 280px; }
+    .chip.qca { background: var(--blue-50); color: var(--blue-800); border-color: var(--blue-100); }
+    .kpi-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; min-width: 440px; }
     .kpi {
-      border-radius: 10px; padding: 8px 12px; text-align: center;
+      border-radius: 10px; padding: 8px 10px; text-align: center;
       border: 1px solid var(--slate-200); background: var(--slate-100);
     }
-    .kpi.urg { background: var(--amber-50); border-color: #fde68a; color: var(--amber-800); }
-    .kpi.hosp { background: var(--teal-50); border-color: var(--teal-100); color: var(--teal-700); }
-    .kpi-label { font-size: 11px; font-weight: 600; }
-    .kpi-val { font-size: 18px; font-weight: 700; margin-top: 2px; }
+    .kpi.urg-inf { background: var(--amber-50); border-color: #fde68a; color: var(--amber-800); }
+    .kpi.hosp-inf { background: var(--teal-50); border-color: var(--teal-100); color: var(--teal-700); }
+    .kpi.urg-qca { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+    .kpi.hosp-qca { background: var(--blue-50); border-color: var(--blue-100); color: var(--blue-800); }
+    .kpi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .kpi-val { font-size: 17px; font-weight: 700; margin-top: 2px; }
     .section-head {
-      padding: 14px 18px; border-bottom: 1px solid var(--slate-200);
+      padding: 13px 18px; border-bottom: 1px solid var(--slate-200);
       background: #f8fafc; display: flex; flex-wrap: wrap;
       align-items: center; justify-content: space-between; gap: 10px;
     }
-    .section-head.urg-head { background: var(--amber-50); }
-    .section-head.hosp-head { background: var(--teal-50); }
+    .section-head.urg-inf-head { background: var(--amber-50); }
+    .section-head.hosp-inf-head { background: var(--teal-50); }
+    .section-head.urg-qca-head { background: #fff7ed; }
+    .section-head.hosp-qca-head { background: var(--blue-50); }
     .section-head h2, .section-head h3 { font-size: 14px; font-weight: 700; color: var(--slate-800); }
     .section-head p { font-size: 12px; color: var(--slate-500); margin-top: 2px; }
+    .btn-group-copy { display: flex; flex-wrap: wrap; gap: 6px; }
+    .strategy-banner {
+      padding: 10px 18px; font-size: 13px; font-weight: 800; letter-spacing: 0.02em;
+      text-transform: uppercase; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .strategy-banner.inf { background: #0f766e; color: #fff; }
+    .strategy-banner.qca { background: #1e3a8a; color: #fff; }
+    .strategy-group { display: flex; flex-direction: column; gap: 14px; }
     .search-input {
       font-size: 12px; padding: 6px 12px; border-radius: 8px;
       border: 1px solid var(--slate-300); width: 210px; outline: none;
@@ -200,7 +215,7 @@
       background: var(--slate-100); color: var(--slate-800);
     }
     .days-pill.high { background: var(--rose-100); color: var(--rose-800); }
-    .empty-row { text-align: center; color: var(--slate-500); padding: 28px !important; }
+    .empty-row { text-align: center; color: var(--slate-500); padding: 24px !important; }
     .audit-box {
       font-family: monospace; font-size: 11px; background: #f8fafc;
       border: 1px solid var(--slate-200); border-radius: 8px;
@@ -228,12 +243,16 @@
         <div class="brand-icon">+</div>
         <div>
           <h1>Analizador Diario de Censos Clínicos — EPS Sanitas</h1>
-          <p>Consolidación automatizada de Urgencias y Hospitalización (20 IPS · Carga Múltiple por Clínica)</p>
+          <p>4 Cuadros Independientes: Urgencias y Hospitalización (Infecciones/Cardíaca y Quirúrgicos)</p>
         </div>
       </div>
       <div class="header-actions">
         <span class="badge-secure"><span class="dot-live"></span>100% Local · Cero Exposición</span>
-        <button class="btn btn-primary" onclick="exportAllToExcel()">Exportar Excel Consolidado</button>
+        <label for="cie-master-input" class="btn btn-cie" title="Cargar PDF, Excel o CSV con el Listado de Diagnósticos CIE-10">
+          Cargar Maestro CIE-10
+        </label>
+        <input id="cie-master-input" type="file" accept=".pdf,.xlsx,.xls,.csv" class="hidden" onchange="handleCieMasterUpload(event)" />
+        <button class="btn btn-primary" onclick="exportAllToExcel()">Exportar Excel (4 Hojas)</button>
         <button class="btn btn-dark" onclick="clearAllData()">Limpiar Todo</button>
       </div>
     </div>
@@ -244,52 +263,49 @@
       <strong>Aviso de red institucional:</strong> Tu red bloqueó la descarga automática del lector de Excel/PDF externo. Si los archivos Excel no cargan, guarda tus censos como <strong>CSV (delimitado por comas)</strong> en Excel y súbelos aquí: la aplicación los leerá de forma 100% nativa.
     </div>
 
+    <!-- Reglas y KPIs -->
     <section class="card rules-bar">
       <div style="flex:1; min-width:300px;">
         <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">
           <span class="tag-rule">Reglas Activas</span>
           <span style="font-size:12px; color:#475569;">Solo <strong>EPS Sanitas</strong> (Excluye MP Colsanitas y Medisanitas)</span>
-        </div>
-        <div class="filter-pills">
-          <button class="pill-btn active" id="btn-grp-ALL" onclick="setGroupFilter('ALL')">Todos los Diagnósticos (Consolidado)</button>
-          <button class="pill-btn" id="btn-grp-INF" onclick="setGroupFilter('INF')">Infecciones / Respiratorio / Cardíaco</button>
-          <button class="pill-btn" id="btn-grp-LIT" onclick="setGroupFilter('LIT')">Litiasis Biliar-Urinaria / Fracturas</button>
+          <span class="tag-cie" id="cie-dict-status">Catálogo CIE-10: 68 códigos integrados</span>
         </div>
         <div class="dx-chips">
-          <span class="chip">Neumonía / J189</span>
-          <span class="chip">IVU / N390</span>
-          <span class="chip">Bronquitis / J218</span>
-          <span class="chip">Pielonefritis / N11x</span>
-          <span class="chip">EPOC / J456 / J44x</span>
-          <span class="chip">Insuf. Cardiaca / I500</span>
-          <span class="chip">Celulitis / L03</span>
-          <span class="chip">Bronquiolitis / J219</span>
-          <span class="chip">Colelitiasis-Colecistitis / K800–K819</span>
-          <span class="chip">Cálculo Renal-Uréter / N200–N209</span>
-          <span class="chip">Fractura Fémur-Tibia-Peroné / S72x–S82x–S840</span>
+          <span class="chip"><strong>Grupo 1 (Infecciones / Falla Cardiaca):</strong> Neumonía J189 · IVU N390 · Bronquitis J218 · Pielonefritis N11x/N111 · EPOC/Exacerbación J456/J44x · Insuf. Cardiaca I500 · Celulitis L03 · Bronquiolitis J219</span>
+          <span class="chip qca"><strong>Grupo 2 (Quirúrgicos):</strong> K800–K808 · K810–K819 (Colelitiasis/Colecistitis) · N200–N209 (Litiasis Urinaria) · S821–S824 · S840 · S720–S729 (Fracturas/Trauma Tibia-Peroné-Fémur)</span>
         </div>
       </div>
 
       <div class="kpi-group">
         <div class="kpi">
           <div class="kpi-label">IPS Cargadas</div>
-          <div class="kpi-val"><span id="kpi-clinics">0</span><span style="font-size:12px;font-weight:400;">/20</span></div>
+          <div class="kpi-val"><span id="kpi-clinics">0</span><span style="font-size:11px;font-weight:400;">/20</span></div>
         </div>
-        <div class="kpi urg">
-          <div class="kpi-label">Urgencias</div>
-          <div class="kpi-val" id="kpi-urg">0</div>
+        <div class="kpi urg-inf">
+          <div class="kpi-label">1A Urg. Inf</div>
+          <div class="kpi-val" id="kpi-urg-inf">0</div>
         </div>
-        <div class="kpi hosp">
-          <div class="kpi-label">Hospitalización</div>
-          <div class="kpi-val" id="kpi-hosp">0</div>
+        <div class="kpi hosp-inf">
+          <div class="kpi-label">1B Hosp. Inf</div>
+          <div class="kpi-val" id="kpi-hosp-inf">0</div>
+        </div>
+        <div class="kpi urg-qca">
+          <div class="kpi-label">2A Urg. Qca</div>
+          <div class="kpi-val" id="kpi-urg-qca">0</div>
+        </div>
+        <div class="kpi hosp-qca">
+          <div class="kpi-label">2B Hosp. Qca</div>
+          <div class="kpi-val" id="kpi-hosp-qca">0</div>
         </div>
       </div>
     </section>
 
+    <!-- Panel de 20 Clínicas -->
     <section class="card">
       <div class="section-head">
         <div>
-          <h2>1. Carga Diaria por Institución (1, 2 o más archivos Excel, CSV o PDF por clínica)</h2>
+          <h2>Carga Diaria por Institución (1, 2 o más archivos Excel, CSV o PDF por clínica)</h2>
           <p>Selecciona o arrastra uno o varios archivos en cada clínica (ej. Contributivo + Subsidiado, o Urgencias + Hospitalización).</p>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
@@ -300,68 +316,163 @@
       <div id="clinics-grid" class="clinics-grid"></div>
     </section>
 
-    <section class="card">
-      <div class="section-head urg-head">
-        <div>
-          <h3>CUADRO 1: URGENCIAS (<span id="badge-urg">0</span>)</h3>
-          <p>Incluye: Urgencias, Observación, Transición — Solo EPS Sanitas (Excluye MP Colsanitas y Medisanitas)</p>
+    <!-- =================================================================== -->
+    <!-- GRUPO 1: INFECCIONES, RESPIRATORIO Y FALLA CARDIACA (2 CUADROS)     -->
+    <!-- =================================================================== -->
+    <div class="strategy-group">
+      <!-- 1A. Urgencias Infecciones -->
+      <div class="card">
+        <div class="strategy-banner inf">
+          <span>GRUPO 1: INFECCIONES, RESPIRATORIO Y FALLA CARDIACA (J189 · N390 · J218 · N11x/N111 · J456 · I500 · L03 · J219)</span>
+          <span style="font-size:11px; font-weight:600;">Cuadro 1A: Urgencias | Cuadro 1B: Hospitalización</span>
         </div>
-        <button class="btn btn-light" onclick="copyTableToClipboard('urgencias')">Copiar Tabla Urgencias</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Ciudad</th>
-              <th>Institución</th>
-              <th>Paciente</th>
-              <th>Tipo ID</th>
-              <th>Número ID</th>
-              <th>Diagnóstico Principal</th>
-              <th>Servicio / Cama</th>
-              <th style="text-align:center;">Días Estancia</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-urgencias">
-            <tr><td colspan="8" class="empty-row">Carga archivos en las instituciones superiores para visualizar los pacientes de Urgencias.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
 
-    <section class="card">
-      <div class="section-head hosp-head">
-        <div>
-          <h3>CUADRO 2: HOSPITALIZACIÓN (<span id="badge-hosp">0</span>)</h3>
-          <p>Incluye: Pensionados, Piso, Hospitalización, UCI / Intermedios, Quirófanos, Cirugía — Solo EPS Sanitas</p>
+        <div class="section-head urg-inf-head">
+          <div>
+            <h3>CUADRO 1A: URGENCIAS — Infecciones, Respiratorio y Falla Cardiaca (<span id="badge-urg-inf">0</span>)</h3>
+            <p>Incluye: Urgencias, Observación, Transición — Solo EPS Sanitas (Excluye MP Colsanitas y Medisanitas)</p>
+          </div>
+          <div class="btn-group-copy">
+            <button class="btn btn-light" onclick="copyTableToClipboard('urg_inf', false)">Copiar para Correo (Sin Datos Pte)</button>
+            <button class="btn btn-light" onclick="copyTableToClipboard('urg_inf', true)">Copiar Completo (8 Col.)</button>
+          </div>
         </div>
-        <button class="btn btn-light" onclick="copyTableToClipboard('hospitalizacion')">Copiar Tabla Hospitalización</button>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ciudad</th>
+                <th>Institución</th>
+                <th>Paciente</th>
+                <th>Tipo ID</th>
+                <th>Número ID</th>
+                <th>Servicio / Cama / Registro / Habitación / Pabellón</th>
+                <th>Diagnóstico Principal</th>
+                <th style="text-align:center;">Días Estancia</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-urg-inf">
+              <tr><td colspan="8" class="empty-row">Carga archivos en las instituciones superiores para visualizar Urgencias (Infecciones y Falla Cardiaca).</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Ciudad</th>
-              <th>Institución</th>
-              <th>Paciente</th>
-              <th>Tipo ID</th>
-              <th>Número ID</th>
-              <th>Diagnóstico Principal</th>
-              <th>Servicio / Cama</th>
-              <th style="text-align:center;">Días Estancia</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-hospitalizacion">
-            <tr><td colspan="8" class="empty-row">Carga archivos en las instituciones superiores para visualizar los pacientes de Hospitalización.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
 
+      <!-- 1B. Hospitalización Infecciones -->
+      <div class="card">
+        <div class="section-head hosp-inf-head">
+          <div>
+            <h3>CUADRO 1B: HOSPITALIZACIÓN — Infecciones, Respiratorio y Falla Cardiaca (<span id="badge-hosp-inf">0</span>)</h3>
+            <p>Incluye: Pensionados, Piso, Hospitalización, UCI / Intermedios, Quirófanos, Cirugía — Solo EPS Sanitas</p>
+          </div>
+          <div class="btn-group-copy">
+            <button class="btn btn-light" onclick="copyTableToClipboard('hosp_inf', false)">Copiar para Correo (Sin Datos Pte)</button>
+            <button class="btn btn-light" onclick="copyTableToClipboard('hosp_inf', true)">Copiar Completo (8 Col.)</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ciudad</th>
+                <th>Institución</th>
+                <th>Paciente</th>
+                <th>Tipo ID</th>
+                <th>Número ID</th>
+                <th>Servicio / Cama / Registro / Habitación / Pabellón</th>
+                <th>Diagnóstico Principal</th>
+                <th style="text-align:center;">Días Estancia</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-hosp-inf">
+              <tr><td colspan="8" class="empty-row">Carga archivos en las instituciones superiores para visualizar Hospitalización (Infecciones y Falla Cardiaca).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- GRUPO 2: DIAGNÓSTICOS QUIRÚRGICOS (2 CUADROS)                       -->
+    <!-- =================================================================== -->
+    <div class="strategy-group">
+      <!-- 2A. Urgencias Quirúrgicos -->
+      <div class="card">
+        <div class="strategy-banner qca">
+          <span>GRUPO 2: DIAGNÓSTICOS QUIRÚRGICOS (K800–K819 · N200–N209 · S821–S824 · S840 · S720–S729)</span>
+          <span style="font-size:11px; font-weight:600;">Cuadro 2A: Urgencias | Cuadro 2B: Hospitalización</span>
+        </div>
+
+        <div class="section-head urg-qca-head">
+          <div>
+            <h3>CUADRO 2A: URGENCIAS — Diagnósticos Quirúrgicos (<span id="badge-urg-qca">0</span>)</h3>
+            <p>Incluye: Urgencias, Observación, Transición — Solo EPS Sanitas (Excluye MP Colsanitas y Medisanitas)</p>
+          </div>
+          <div class="btn-group-copy">
+            <button class="btn btn-light" onclick="copyTableToClipboard('urg_qca', false)">Copiar para Correo (Sin Datos Pte)</button>
+            <button class="btn btn-light" onclick="copyTableToClipboard('urg_qca', true)">Copiar Completo (8 Col.)</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ciudad</th>
+                <th>Institución</th>
+                <th>Paciente</th>
+                <th>Tipo ID</th>
+                <th>Número ID</th>
+                <th>Servicio / Cama / Registro / Habitación / Pabellón</th>
+                <th>Diagnóstico Principal</th>
+                <th style="text-align:center;">Días Estancia</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-urg-qca">
+              <tr><td colspan="8" class="empty-row">Carga archivos en las instituciones superiores para visualizar Urgencias (Diagnósticos Quirúrgicos).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2B. Hospitalización Quirúrgicos -->
+      <div class="card">
+        <div class="section-head hosp-qca-head">
+          <div>
+            <h3>CUADRO 2B: HOSPITALIZACIÓN — Diagnósticos Quirúrgicos (<span id="badge-hosp-qca">0</span>)</h3>
+            <p>Incluye: Pensionados, Piso, Hospitalización, UCI / Intermedios, Quirófanos, Cirugía — Solo EPS Sanitas</p>
+          </div>
+          <div class="btn-group-copy">
+            <button class="btn btn-light" onclick="copyTableToClipboard('hosp_qca', false)">Copiar para Correo (Sin Datos Pte)</button>
+            <button class="btn btn-light" onclick="copyTableToClipboard('hosp_qca', true)">Copiar Completo (8 Col.)</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ciudad</th>
+                <th>Institución</th>
+                <th>Paciente</th>
+                <th>Tipo ID</th>
+                <th>Número ID</th>
+                <th>Servicio / Cama / Registro / Habitación / Pabellón</th>
+                <th>Diagnóstico Principal</th>
+                <th style="text-align:center;">Días Estancia</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-hosp-qca">
+              <tr><td colspan="8" class="empty-row">Carga archivos en las instituciones superiores para visualizar Hospitalización (Diagnósticos Quirúrgicos).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bitácora -->
     <section class="card" style="padding:14px 18px;">
       <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b;">Bitácora de Auditoría Local</div>
       <div id="audit-log" class="audit-box">
-        <div>Sistema listo. Soporte activo para todos los diagnósticos clínicos y carga múltiple por IPS.</div>
+        <div>Sistema listo. 4 cuadros independientes activos: 1A Urgencias Infecciones, 1B Hospitalización Infecciones, 2A Urgencias Quirúrgicos y 2B Hospitalización Quirúrgicos.</div>
       </div>
     </section>
   </main>
@@ -392,9 +503,113 @@
       { id: 'sanjuandedios', name: 'Hospital San Juan de Dios', city: 'Pamplona' }
     ];
 
+    var CIE10_DICT = {
+      'J180': 'BRONCONEUMONIA, NO ESPECIFICADA',
+      'J181': 'NEUMONIA LOBAR, NO ESPECIFICADA',
+      'J182': 'NEUMONIA HIPOSTATICA, NO ESPECIFICADA',
+      'J188': 'OTRAS NEUMONIAS, DE MICROORGANISMO NO ESPECIFICADO',
+      'J189': 'NEUMONIA, NO ESPECIFICADA',
+      'J150': 'NEUMONIA DEBIDA A KLEBSIELLA PNEUMONIAE',
+      'J151': 'NEUMONIA DEBIDA A PSEUDOMONAS',
+      'J152': 'NEUMONIA DEBIDA A ESTAFILOCOCOS',
+      'J158': 'OTRAS NEUMONIAS BACTERIANAS',
+      'J159': 'NEUMONIA BACTERIANA, NO ESPECIFICADA',
+      'J129': 'NEUMONIA VIRAL, NO ESPECIFICADA',
+      'J13X': 'NEUMONIA DEBIDA A STREPTOCOCCUS PNEUMONIAE',
+      'J14X': 'NEUMONIA DEBIDA A HAEMOPHILUS INFLUENZAE',
+      'J851': 'ABSCESO DEL PULMON CON NEUMONIA',
+      'N390': 'INFECCION DE VIAS URINARIAS, SITIO NO ESPECIFICADO',
+      'J209': 'BRONQUITIS AGUDA, NO ESPECIFICADA',
+      'J210': 'BRONQUIOLITIS AGUDA DEBIDA A VIRUS SINCITIAL RESPIRATORIO',
+      'J218': 'BRONQUIOLITIS AGUDA DEBIDA A OTROS MICROORGANISMOS ESPECIFICADOS',
+      'J219': 'BRONQUIOLITIS AGUDA, NO ESPECIFICADA',
+      'J40X': 'BRONQUITIS, NO ESPECIFICADA COMO AGUDA O CRONICA',
+      'J410': 'BRONQUITIS CRONICA SIMPLE',
+      'J42X': 'BRONQUITIS CRONICA NO ESPECIFICADA',
+      'N10X': 'NEFRITIS TUBULOINTERSTICIAL AGUDA (PIELONEFRITIS AGUDA)',
+      'N110': 'PIELONEFRITIS CRONICA NO OBSTRUCTIVA ASOCIADA CON REFLUJO',
+      'N111': 'PIELONEFRITIS CRONICA OBSTRUCTIVA',
+      'N118': 'OTRAS PIELONEFRITIS CRONICAS',
+      'N119': 'PIELONEFRITIS CRONICA, SIN OTRA ESPECIFICACION',
+      'N12X': 'NEFRITIS TUBULOINTERSTICIAL, NO ESPECIFICADA COMO AGUDA O CRONICA',
+      'J440': 'ENFERMEDAD PULMONAR OBSTRUCTIVA CRONICA CON INFECCION AGUDA DE LAS VIAS RESPIRATORIAS INFERIORES',
+      'J441': 'ENFERMEDAD PULMONAR OBSTRUCTIVA CRONICA CON EXACERBACION AGUDA, NO ESPECIFICADA',
+      'J448': 'OTRAS ENFERMEDADES PULMONARES OBSTRUCTIVAS CRONICAS ESPECIFICADAS',
+      'J449': 'ENFERMEDAD PULMONAR OBSTRUCTIVA CRONICA, NO ESPECIFICADA',
+      'J456': 'ASMA MIXTA / EXACERBACION',
+      'I500': 'INSUFICIENCIA CARDIACA CONGESTIVA',
+      'I501': 'INSUFICIENCIA VENTRICULAR IZQUIERDA',
+      'I509': 'INSUFICIENCIA CARDIACA, NO ESPECIFICADA',
+      'I110': 'ENFERMEDAD CARDIACA HIPERTENSIVA CON INSUFICIENCIA CARDIACA (CONGESTIVA)',
+      'L030': 'CELULITIS DE LOS DEDOS DE LA MANO Y DEL PIE',
+      'L031': 'CELULITIS DE OTRAS PARTES DE LOS MIEMBROS',
+      'L032': 'CELULITIS DE LA CARA',
+      'L033': 'CELULITIS DEL TRONCO',
+      'L038': 'CELULITIS DE OTROS SITIOS',
+      'L039': 'CELULITIS DE SITIO NO ESPECIFICADO',
+      'K800': 'CALCULO DE LA VESICULA BILIAR CON COLECISTITIS AGUDA',
+      'K801': 'CALCULO DE LA VESICULA BILIAR CON OTRA COLECISTITIS',
+      'K802': 'CALCULO DE LA VESICULA BILIAR SIN COLECISTITIS',
+      'K804': 'CALCULO DE CONDUCTO BILIAR CON COLECISTITIS',
+      'K805': 'CALCULO DE CONDUCTO BILIAR SIN COLANGITIS NI COLECISTITIS',
+      'K808': 'OTRAS COLELITIASIS',
+      'K810': 'COLECISTITIS AGUDA',
+      'K811': 'COLECISTITIS CRONICA',
+      'K818': 'OTRAS COLECISTITIS',
+      'K819': 'COLECISTITIS, NO ESPECIFICADA',
+      'N200': 'CALCULO DEL RINON',
+      'N201': 'CALCULO DEL URETER',
+      'N202': 'CALCULO DEL RINON CON CALCULO DEL URETER',
+      'N209': 'CALCULO URINARIO, NO ESPECIFICADO',
+      'S821': 'FRACTURA DE LA EPIFISIS SUPERIOR DE LA TIBIA',
+      'S822': 'FRACTURA DE LA DIAFISIS DE LA TIBIA',
+      'S823': 'FRACTURA DE LA EPIFISIS INFERIOR DE LA TIBIA',
+      'S824': 'FRACTURA DEL PERONE SOLAMENTE',
+      'S840': 'TRAUMATISMO DEL NERVIO TIBIAL A NIVEL DE LA PIERNA',
+      'S720': 'FRACTURA DEL CUELLO DEL FEMUR',
+      'S723': 'FRACTURA DE LA DIAFISIS DEL FEMUR',
+      'S724': 'FRACTURA DE LA EPIFISIS INFERIOR DEL FEMUR',
+      'S727': 'FRACTURAS MULTIPLES DEL FEMUR',
+      'S728': 'FRACTURAS DE OTRAS PARTES DEL FEMUR',
+      'S729': 'FRACTURA DEL FEMUR, PARTE NO ESPECIFICADA'
+    };
+
+    try {
+      var savedCie = localStorage.getItem('CIE10_CUSTOM_DICT');
+      if (savedCie) {
+        var parsedCie = JSON.parse(savedCie);
+        Object.keys(parsedCie).forEach(function(k) { CIE10_DICT[k] = parsedCie[k]; });
+      }
+    } catch (e) {}
+
+    function updateCieStatusBadge() {
+      var el = document.getElementById('cie-dict-status');
+      if (el) el.textContent = 'Catálogo CIE-10: ' + Object.keys(CIE10_DICT).length + ' códigos cargados';
+    }
+
+    function resolveDiagnosisText(cieCodeRaw, dxNameRaw) {
+      var code = norm(cieCodeRaw).replace(/[^A-Z0-9]/g, '');
+      var name = String(dxNameRaw || '').trim();
+
+      if (!code && /^[A-Z]\d{2,3}[A-Z0-9]?$/i.test(name)) {
+        code = norm(name);
+        name = '';
+      }
+
+      if (code && !name) {
+        if (CIE10_DICT[code]) name = CIE10_DICT[code];
+        else if (code.length === 3 && CIE10_DICT[code + '9']) name = CIE10_DICT[code + '9'];
+        else if (code.length === 3 && CIE10_DICT[code + 'X']) name = CIE10_DICT[code + 'X'];
+      }
+
+      if (code && name && norm(name) !== code) {
+        return code + ' - ' + name;
+      }
+      return name || code || 'Sin diagnóstico';
+    }
+
     var clinicState = {};
     var panelExpanded = true;
-    var activeGroupFilter = 'ALL';
 
     function norm(str) {
       if (str === null || str === undefined) return '';
@@ -405,7 +620,7 @@
       var t = document.getElementById('toast');
       t.textContent = msg;
       t.classList.add('show');
-      setTimeout(function() { t.classList.remove('show'); }, 2600);
+      setTimeout(function() { t.classList.remove('show'); }, 2800);
     }
 
     function logAudit(msg, type) {
@@ -418,14 +633,76 @@
       box.prepend(line);
     }
 
-    function setGroupFilter(grp) {
-      activeGroupFilter = grp;
-      ['ALL', 'INF', 'LIT'].forEach(function(k) {
-        var btn = document.getElementById('btn-grp-' + k);
-        if (btn) btn.classList.toggle('active', k === grp);
-      });
-      renderClinicCards();
-      renderConsolidatedTables();
+    async function handleCieMasterUpload(e) {
+      var file = e.target && e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+
+      var ext = file.name.split('.').pop().toLowerCase();
+      var added = 0;
+
+      try {
+        showToast('Leyendo Maestro CIE-10 (' + file.name + ')...');
+        if (ext === 'pdf') {
+          if (!window.pdfjsLib) throw new Error('Lector PDF bloqueado por la red.');
+          var buffer = await file.arrayBuffer();
+          var pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+          logAudit('Procesando Maestro CIE-10 PDF (' + pdf.numPages + ' páginas)...');
+
+          for (var p = 1; p <= pdf.numPages; p++) {
+            var page = await pdf.getPage(p);
+            var content = await page.getTextContent();
+            var lineText = content.items.map(function(it) { return it.str; }).join(' ');
+            var rx = /\b([A-Z]\d{2,3}[A-Z0-9]?)\s+([A-ZÁÉÍÓÚÑ0-9 ,.\-\(\)\/]{4,95}?)(?=\s+(?:Ambos|Mujeres|Hombres)\b|\s+[A-Z]\d{2,3}\b|$)/g;
+            var m;
+            while ((m = rx.exec(lineText)) !== null) {
+              var cCode = norm(m[1]);
+              var cName = m[2].trim().replace(/\s+/g, ' ');
+              if (cCode && cName && cName.length > 3) {
+                if (!CIE10_DICT[cCode]) added++;
+                CIE10_DICT[cCode] = cName;
+              }
+            }
+          }
+        } else if (ext === 'csv') {
+          var txt = await file.text();
+          var rows = parseCsvRows(txt);
+          rows.forEach(function(r) {
+            if (r.length >= 2 && /^[A-Z]\d{2,3}[A-Z0-9]?$/i.test(r[0].trim())) {
+              var cCode = norm(r[0]);
+              var cName = r[1].trim();
+              if (!CIE10_DICT[cCode]) added++;
+              CIE10_DICT[cCode] = cName;
+            }
+          });
+        } else {
+          if (!window.XLSX) throw new Error('Lector Excel bloqueado por la red.');
+          var buf = await file.arrayBuffer();
+          var wb = XLSX.read(buf, { type: 'array' });
+          wb.SheetNames.forEach(function(sn) {
+            var rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: '' });
+            rows.forEach(function(r) {
+              if (r.length >= 2 && /^[A-Z]\d{2,3}[A-Z0-9]?$/i.test(String(r[0]).trim())) {
+                var cCode = norm(r[0]);
+                var cName = String(r[1]).trim();
+                if (!CIE10_DICT[cCode]) added++;
+                CIE10_DICT[cCode] = cName;
+              }
+            });
+          });
+        }
+
+        try {
+          localStorage.setItem('CIE10_CUSTOM_DICT', JSON.stringify(CIE10_DICT));
+        } catch (storageErr) {}
+
+        updateCieStatusBadge();
+        logAudit('Maestro CIE-10 cargado: ' + added + ' códigos nuevos añadidos (Total: ' + Object.keys(CIE10_DICT).length + ').');
+        showToast('Maestro CIE-10 actualizado (' + Object.keys(CIE10_DICT).length + ' códigos)');
+      } catch (err) {
+        logAudit('Error cargando Maestro CIE-10: ' + err.message, 'err');
+        showToast(err.message);
+      }
     }
 
     function toggleClinicsPanel() {
@@ -444,11 +721,6 @@
         var match = norm(c.name).indexOf(q) !== -1 || norm(c.city).indexOf(q) !== -1;
         el.style.display = match ? '' : 'none';
       });
-    }
-
-    function matchesActiveFilter(r) {
-      if (activeGroupFilter === 'ALL') return true;
-      return r.group === activeGroupFilter;
     }
 
     function renderClinicCards() {
@@ -522,7 +794,8 @@
           stack.className = 'files-stack';
 
           files.forEach(function(f, idx) {
-            var filteredCount = f.records.filter(matchesActiveFilter).length;
+            var infCount = f.records.filter(function(r) { return r.group === 'INF'; }).length;
+            var qcaCount = f.records.filter(function(r) { return r.group === 'QCA'; }).length;
             var fBox = document.createElement('div');
             fBox.className = 'file-info';
 
@@ -545,7 +818,7 @@
 
             var fStats = document.createElement('div');
             fStats.className = 'file-stats';
-            fStats.innerHTML = '<span>Sanitas: <strong>' + f.sanitasCount + '</strong></span><span class="pill-count">Extraídos: ' + filteredCount + '</span>';
+            fStats.innerHTML = '<span>Sanitas: <strong>' + f.sanitasCount + '</strong></span><span class="pill-count">Inf: ' + infCount + ' · Qca: ' + qcaCount + '</span>';
 
             fBox.appendChild(fHead);
             fBox.appendChild(fStats);
@@ -608,6 +881,7 @@
     }
 
     var DX_RULES = [
+      // Grupo 1: Infecciones, Respiratorio y Falla Cardiaca (INF)
       { group: 'INF', label: 'Neumonía', codes: ['J189', 'J180', 'J181', 'J182', 'J188', 'J15', 'J12', 'J13', 'J14', 'J16', 'J17', 'J851'], words: ['NEUMONIA', 'BRONCONEUMONIA'] },
       { group: 'INF', label: 'Infección vías urinarias', codes: ['N390'], words: ['INFECCION DE VIAS URINARIAS', 'INFECCION VIAS URINARIAS', 'INFECCION URINARIA'] },
       { group: 'INF', label: 'Bronquitis', codes: ['J218', 'J20', 'J40', 'J41', 'J42'], words: ['BRONQUITIS'] },
@@ -616,9 +890,10 @@
       { group: 'INF', label: 'Insuficiencia cardiaca', codes: ['I500', 'I50', 'I501', 'I509', 'I110'], words: ['INSUFICIENCIA CARDIACA', 'FALLA CARDIACA'] },
       { group: 'INF', label: 'Celulitis', codes: ['L03', 'L030', 'L031', 'L032', 'L033', 'L038', 'L039'], words: ['CELULITIS'] },
       { group: 'INF', label: 'Bronquiolitis', codes: ['J219', 'J21', 'J210'], words: ['BRONQUIOLITIS'] },
-      { group: 'LIT', label: 'Colelitiasis / Colecistitis', codes: ['K800', 'K801', 'K802', 'K804', 'K805', 'K808', 'K810', 'K811', 'K818', 'K819'], words: ['CALCULO DE LA VESICULA BILIAR', 'CALCULO DE CONDUCTO BILIAR', 'OTRAS COLELITIASIS', 'COLECISTITIS AGUDA', 'COLECISTITIS CRONICA', 'OTRAS COLECISTITIS', 'COLECISTITIS, NO ESPECIFICADA', 'COLECISTITIS NO ESPECIFICADA'] },
-      { group: 'LIT', label: 'Litiasis urinaria', codes: ['N200', 'N201', 'N202', 'N209'], words: ['CALCULO DEL RINON', 'CALCULO DEL URETER', 'CALCULO URINARIO'] },
-      { group: 'LIT', label: 'Fractura / Trauma Fémur-Tibia-Peroné', codes: ['S824', 'S821', 'S822', 'S823', 'S840', 'S720', 'S723', 'S724', 'S727', 'S728', 'S729'], words: ['FRACTURA DEL PERONE SOLAMENTE', 'FRACTURA DE LA EPIFISIS SUPERIOR DE LA TIBIA', 'FRACTURA DE LA DIAFISIS DE LA TIBIA', 'FRACTURA DE LA EPIFISIS INFERIOR DE LA TIBIA', 'TRAUMATISMO DEL NERVIO TIBIAL', 'FRACTURA DEL CUELLO DEL FEMUR', 'FRACTURA DEL CUELLO DE FEMUR', 'FRACTURA DE LA DIAFISIS DEL FEMUR', 'FRACTURA DE LA EPIFISIS INFERIOR DEL FEMUR', 'FRACTURAS MULTIPLES DEL FEMUR', 'FRACTURAS DE OTRAS PARTES DEL FEMUR', 'FRACTURA DEL FEMUR'] }
+      // Grupo 2: Diagnósticos Quirúrgicos (QCA) - Exactos solicitados
+      { group: 'QCA', label: 'Colelitiasis / Colecistitis', codes: ['K800', 'K801', 'K802', 'K804', 'K805', 'K808', 'K810', 'K811', 'K818', 'K819'], words: ['CALCULO DE LA VESICULA BILIAR', 'CALCULO DE CONDUCTO BILIAR', 'OTRAS COLELITIASIS', 'COLECISTITIS AGUDA', 'COLECISTITIS CRONICA', 'OTRAS COLECISTITIS', 'COLECISTITIS, NO ESPECIFICADA', 'COLECISTITIS NO ESPECIFICADA'] },
+      { group: 'QCA', label: 'Litiasis urinaria', codes: ['N200', 'N201', 'N202', 'N209'], words: ['CALCULO DEL RINON', 'CALCULO DEL URETER', 'CALCULO URINARIO'] },
+      { group: 'QCA', label: 'Fractura / Trauma Fémur-Tibia-Peroné', codes: ['S824', 'S821', 'S822', 'S823', 'S840', 'S720', 'S723', 'S724', 'S727', 'S728', 'S729'], words: ['FRACTURA DEL PERONE SOLAMENTE', 'FRACTURA DE LA EPIFISIS SUPERIOR DE LA TIBIA', 'FRACTURA DE LA DIAFISIS DE LA TIBIA', 'FRACTURA DE LA EPIFISIS INFERIOR DE LA TIBIA', 'TRAUMATISMO DEL NERVIO TIBIAL', 'FRACTURA DEL CUELLO DEL FEMUR', 'FRACTURA DEL CUELLO DE FEMUR', 'FRACTURA DE LA DIAFISIS DEL FEMUR', 'FRACTURA DE LA EPIFISIS INFERIOR DEL FEMUR', 'FRACTURAS MULTIPLES DEL FEMUR', 'FRACTURAS DE OTRAS PARTES DEL FEMUR', 'FRACTURA DEL FEMUR'] }
     ];
 
     function matchDiagnosis(text) {
@@ -658,6 +933,10 @@
           tipo = m[1].toUpperCase();
           num = m[2].trim();
         }
+      }
+      if (/^(CC|TI|RC|CE|PPT|PT|PA|CN|SC|DE|AS|MS)$/i.test(num)) {
+        if (!tipo) tipo = num.toUpperCase();
+        num = '';
       }
       return {
         tipoId: tipo || 'No registra',
@@ -773,8 +1052,12 @@
             if (colMap.cama === undefined && (h.indexOf('CAMA') !== -1 || h.indexOf('HABITACION') !== -1)) colMap.cama = idx;
             if (colMap.servicio === undefined && (h.indexOf('SERVICIO') !== -1 || h.indexOf('UBICACION') !== -1 || h.indexOf('ESTACION') !== -1 || h.indexOf('GRUPO') !== -1 || h.indexOf('PABELLON') !== -1 || h.indexOf('HSUNOMBRE') !== -1 || h.indexOf('UNIDAD FUNCIONAL') !== -1)) colMap.servicio = idx;
             if (colMap.piso === undefined && (h.indexOf('PISO') !== -1 || h.indexOf('SECTOR') !== -1)) colMap.piso = idx;
-            if (colMap.tipoDoc === undefined && (h.indexOf('TIPO DOC') !== -1 || h === 'T.D.' || h === 'T. DOCUMENTO' || h === 'TIPO_DOCUMENTO')) colMap.tipoDoc = idx;
-            if (colMap.doc === undefined && (h.indexOf('DOCUMENTO') !== -1 || h.indexOf('IDENTIFICACION') !== -1 || h === 'ID' || h.indexOf('CEDULA') !== -1)) colMap.doc = idx;
+            if (colMap.tipoDoc === undefined && (h.indexOf('TIPO DOC') !== -1 || h === 'T.D.' || h === 'T. DOCUMENTO' || h === 'TIPO_DOCUMENTO' || h === 'IDENTIFICACION')) colMap.tipoDoc = idx;
+            if (h.indexOf('NUMERO IDENTIFICACION') !== -1 || h.indexOf('NUMERO DOCUMENTO') !== -1 || h === 'CEDULA' || h === 'DOCUMENTO') {
+              colMap.doc = idx;
+            } else if (colMap.doc === undefined && (h.indexOf('DOCUMENTO') !== -1 || h === 'ID')) {
+              colMap.doc = idx;
+            }
             if (colMap.entidad === undefined && (h.indexOf('ENTIDAD') !== -1 || h.indexOf('EMPRESA') !== -1 || h.indexOf('CONTRATO') !== -1 || h === 'EPS' || h.indexOf('TERCERO') !== -1 || h === 'PLAN')) colMap.entidad = idx;
             if (colMap.entidad2 === undefined && (h === 'ENTIDAD 2' || h === 'PLAN B.' || h === 'NOMBREPLAN')) colMap.entidad2 = idx;
             if (colMap.cie === undefined && (h === 'CIE10' || h.indexOf('CODIGO') !== -1 || h === 'DX. INICIAL' || h === 'DIAGNOSTICOINGRESO')) colMap.cie = idx;
@@ -828,8 +1111,8 @@
           dxVal = String(row[colMap.cie + 1] || '').trim();
         }
 
-        var primaryCombined = [cieVal, dxVal].filter(Boolean).join(' - ');
-        if (!primaryCombined) primaryCombined = rowJoined;
+        var primaryCombined = resolveDiagnosisText(cieVal, dxVal);
+        if (primaryCombined === 'Sin diagnóstico') primaryCombined = rowJoined;
 
         var rulePrimary = matchDiagnosis(primaryCombined);
         var ruleSecondary = !rulePrimary && dxSecVal ? matchDiagnosis(dxSecVal) : null;
@@ -870,7 +1153,8 @@
           dias = calcDaysFromDate(row[colMap.fechaIng]);
         }
 
-        var finalDx = rulePrimary ? primaryCombined : (primaryCombined + ' (Secundario: ' + dxSecVal + ')');
+        var secResolved = dxSecVal ? resolveDiagnosisText('', dxSecVal) : '';
+        var finalDx = rulePrimary ? primaryCombined : (primaryCombined + ' (Secundario: ' + secResolved + ')');
         var area = classifyArea(currentGroupHeader + ' ' + srvStr + ' ' + camaStr);
 
         records.push({
@@ -926,13 +1210,18 @@
 
         var docMatch = blk.match(/\b(\d{6,14})\b/);
         var nameMatch = blk.match(/\b\d{6,14}\s+([A-ZÁÉÍÓÚÑ\s]{6,45}?)(?=\s+\d|\s+M\b|\s+F\b|\s+AÑO|\s+MES|\s+DIA)/i);
-        var habMatch = blk.match(/\b(HAB\.?\s*\d+[A-Z]?|CAMA\s*\d+[A-Z]?|CUN\d+|UCP\d+|INT\d+|UCI\d+|HOS\w+|OBS\w+)\b/i);
+        var habMatch = blk.match(/\b(HAB\.?\s*\d+[A-Z]?|CAMA\s*\d+[A-Z]?|CUN\d+|UCP\d+|INT\d+|UCI\d+|HOS\w+|OBS\w+|HEXP\w*)\b/i);
         var dateMatch = blk.match(/\b(\d{2}\/\d{2}\/\d{4})\b/);
+        var cieCodeMatch = blk.match(/\b([A-Z]\d{2,3}[A-Z0-9]?)\b/);
 
         var docId = docMatch ? docMatch[1] : 'No registra';
         var pacName = nameMatch ? nameMatch[1].trim() : 'No registra';
         var hab = habMatch ? habMatch[0] : 'Hospitalización / Piso';
         var dias = dateMatch ? calcDaysFromDate(dateMatch[1]) : 0;
+
+        var dxLabel = cieCodeMatch
+          ? resolveDiagnosisText(cieCodeMatch[1], '')
+          : matchedRule.label;
 
         records.push({
           ciudad: clinic.city,
@@ -940,7 +1229,7 @@
           paciente: pacName,
           tipoId: 'No registra',
           numId: docId,
-          diagnostico: matchedRule.label,
+          diagnostico: dxLabel,
           servicioCama: hab,
           dias: dias,
           area: classifyArea(hab),
@@ -950,20 +1239,25 @@
       return { sanitasCount: sanitasCount, records: records };
     }
 
-    function getConsolidatedData() {
-      var urg = [], hosp = [];
+    function getBuckets() {
+      var urgInf = [], hospInf = [], urgQca = [], hospQca = [];
       var seenKeys = {};
 
       Object.keys(clinicState).forEach(function(cid) {
         var st = clinicState[cid];
         (st.files || []).forEach(function(f) {
-          f.records.filter(matchesActiveFilter).forEach(function(r) {
-            var dedupKey = r.institucion + '|' + r.numId + '|' + r.diagnostico + '|' + r.servicioCama;
+          f.records.forEach(function(r) {
+            var dedupKey = r.group + '|' + r.institucion + '|' + r.numId + '|' + r.diagnostico + '|' + r.servicioCama;
             if (r.numId !== 'No registra' && seenKeys[dedupKey]) return;
             seenKeys[dedupKey] = true;
 
-            if (r.area === 'URGENCIAS') urg.push(r);
-            else hosp.push(r);
+            if (r.group === 'INF') {
+              if (r.area === 'URGENCIAS') urgInf.push(r);
+              else hospInf.push(r);
+            } else {
+              if (r.area === 'URGENCIAS') urgQca.push(r);
+              else hospQca.push(r);
+            }
           });
         });
       });
@@ -973,27 +1267,40 @@
                a.institucion.localeCompare(b.institucion, 'es') ||
                a.paciente.localeCompare(b.paciente, 'es');
       };
-      urg.sort(sorter);
-      hosp.sort(sorter);
-      return { urg: urg, hosp: hosp };
+      urgInf.sort(sorter);
+      hospInf.sort(sorter);
+      urgQca.sort(sorter);
+      hospQca.sort(sorter);
+
+      return {
+        urg_inf: urgInf,
+        hosp_inf: hospInf,
+        urg_qca: urgQca,
+        hosp_qca: hospQca
+      };
     }
 
     function renderConsolidatedTables() {
-      var data = getConsolidatedData();
-      var urg = data.urg;
-      var hosp = data.hosp;
+      var b = getBuckets();
       var loadedIpsCount = Object.keys(clinicState).filter(function(cid) {
         return clinicState[cid].files && clinicState[cid].files.length > 0;
       }).length;
 
       document.getElementById('kpi-clinics').textContent = loadedIpsCount;
-      document.getElementById('kpi-urg').textContent = urg.length;
-      document.getElementById('kpi-hosp').textContent = hosp.length;
-      document.getElementById('badge-urg').textContent = urg.length;
-      document.getElementById('badge-hosp').textContent = hosp.length;
+      document.getElementById('kpi-urg-inf').textContent = b.urg_inf.length;
+      document.getElementById('kpi-hosp-inf').textContent = b.hosp_inf.length;
+      document.getElementById('kpi-urg-qca').textContent = b.urg_qca.length;
+      document.getElementById('kpi-hosp-qca').textContent = b.hosp_qca.length;
 
-      renderTableBody('tbody-urgencias', urg, 'Sin pacientes de EPS Sanitas con los diagnósticos filtrados en Urgencias.');
-      renderTableBody('tbody-hospitalizacion', hosp, 'Sin pacientes de EPS Sanitas con los diagnósticos filtrados en Hospitalización.');
+      document.getElementById('badge-urg-inf').textContent = b.urg_inf.length;
+      document.getElementById('badge-hosp-inf').textContent = b.hosp_inf.length;
+      document.getElementById('badge-urg-qca').textContent = b.urg_qca.length;
+      document.getElementById('badge-hosp-qca').textContent = b.hosp_qca.length;
+
+      renderTableBody('tbody-urg-inf', b.urg_inf, 'Sin pacientes de EPS Sanitas en Urgencias para Infecciones / Falla Cardiaca.');
+      renderTableBody('tbody-hosp-inf', b.hosp_inf, 'Sin pacientes de EPS Sanitas en Hospitalización para Infecciones / Falla Cardiaca.');
+      renderTableBody('tbody-urg-qca', b.urg_qca, 'Sin pacientes de EPS Sanitas en Urgencias para Diagnósticos Quirúrgicos.');
+      renderTableBody('tbody-hosp-qca', b.hosp_qca, 'Sin pacientes de EPS Sanitas en Hospitalización para Diagnósticos Quirúrgicos.');
     }
 
     function escapeHtml(str) {
@@ -1013,31 +1320,38 @@
           '<td style="font-weight:600; color:#0f172a;">' + escapeHtml(r.paciente) + '</td>' +
           '<td style="white-space:nowrap;">' + escapeHtml(r.tipoId) + '</td>' +
           '<td style="white-space:nowrap;">' + escapeHtml(r.numId) + '</td>' +
-          '<td style="font-weight:600; color:#115e59;">' + escapeHtml(r.diagnostico) + '</td>' +
           '<td>' + escapeHtml(r.servicioCama) + '</td>' +
+          '<td style="font-weight:600; color:#115e59;">' + escapeHtml(r.diagnostico) + '</td>' +
           '<td style="text-align:center;"><span class="days-pill ' + (r.dias >= 7 ? 'high' : '') + '">' + r.dias + '</span></td>' +
         '</tr>';
       }).join('');
     }
 
-    function copyTableToClipboard(type) {
-      var data = getConsolidatedData();
-      var rows = type === 'urgencias' ? data.urg : data.hosp;
+    function copyTableToClipboard(bucketKey, includePatient) {
+      var b = getBuckets();
+      var rows = b[bucketKey] || [];
       if (rows.length === 0) return showToast('No hay datos para copiar en esta tabla');
-      var header = ['Ciudad', 'Institución', 'Paciente', 'Tipo ID', 'Número ID', 'Diagnóstico Principal', 'Servicio / Cama', 'Días Estancia'].join('\t');
-      var body = rows.map(function(r) {
-        return [r.ciudad, r.institucion, r.paciente, r.tipoId, r.numId, r.diagnostico, r.servicioCama, r.dias].join('\t');
-      }).join('\n');
+      var header, body;
+      if (includePatient) {
+        header = ['Ciudad', 'Institución', 'Paciente', 'Tipo ID', 'Número ID', 'Servicio / Cama / Registro / Habitación / Pabellón', 'Diagnóstico Principal', 'Días de Estancia'].join('\t');
+        body = rows.map(function(r) {
+          return [r.ciudad, r.institucion, r.paciente, r.tipoId, r.numId, r.servicioCama, r.diagnostico, r.dias].join('\t');
+        }).join('\n');
+      } else {
+        header = ['Ciudad', 'Institución', 'Servicio / Cama / Registro / Habitación / Pabellón', 'Diagnóstico Principal', 'Días de Estancia'].join('\t');
+        body = rows.map(function(r) {
+          return [r.ciudad, r.institucion, r.servicioCama, r.diagnostico, r.dias].join('\t');
+        }).join('\n');
+      }
       navigator.clipboard.writeText(header + '\n' + body).then(function() {
-        showToast('Tabla de ' + (type === 'urgencias' ? 'Urgencias' : 'Hospitalización') + ' copiada');
+        showToast('Cuadro copiado al portapapeles');
       });
     }
 
     function exportAllToExcel() {
-      var data = getConsolidatedData();
-      var urg = data.urg;
-      var hosp = data.hosp;
-      if (urg.length === 0 && hosp.length === 0) return showToast('Carga al menos un archivo antes de exportar');
+      var b = getBuckets();
+      var total = b.urg_inf.length + b.hosp_inf.length + b.urg_qca.length + b.hosp_qca.length;
+      if (total === 0) return showToast('Carga al menos un archivo antes de exportar');
       var today = new Date().toISOString().slice(0, 10);
 
       if (window.XLSX) {
@@ -1048,30 +1362,34 @@
             'Paciente': r.paciente,
             'Tipo ID': r.tipoId,
             'Número ID': r.numId,
+            'Servicio / Cama / Registro / Habitación / Pabellón': r.servicioCama,
             'Diagnóstico Principal': r.diagnostico,
-            'Servicio / Cama': r.servicioCama,
-            'Días Estancia': r.dias
+            'Días de Estancia': r.dias
           };
         };
         var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(urg.length ? urg.map(mapRow) : [{ 'Mensaje': 'Sin registros' }]), 'Urgencias');
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(hosp.length ? hosp.map(mapRow) : [{ 'Mensaje': 'Sin registros' }]), 'Hospitalizacion');
-        XLSX.writeFile(wb, 'Consolidado_EPS_Sanitas_' + today + '.xlsx');
-        showToast('Excel consolidado descargado');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(b.urg_inf.length ? b.urg_inf.map(mapRow) : [{ 'Mensaje': 'Sin registros' }]), '1A_Urg_Infecciones');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(b.hosp_inf.length ? b.hosp_inf.map(mapRow) : [{ 'Mensaje': 'Sin registros' }]), '1B_Hosp_Infecciones');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(b.urg_qca.length ? b.urg_qca.map(mapRow) : [{ 'Mensaje': 'Sin registros' }]), '2A_Urg_Quirurgicos');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(b.hosp_qca.length ? b.hosp_qca.map(mapRow) : [{ 'Mensaje': 'Sin registros' }]), '2B_Hosp_Quirurgicos');
+        XLSX.writeFile(wb, 'Consolidado_4_Cuadros_EPS_Sanitas_' + today + '.xlsx');
+        showToast('Excel con 4 hojas descargado');
       } else {
-        var lines = ['AREA;Ciudad;Institucion;Paciente;Tipo ID;Numero ID;Diagnostico Principal;Servicio / Cama;Dias Estancia'];
-        urg.forEach(function(r) { lines.push('URGENCIAS;' + r.ciudad + ';' + r.institucion + ';' + r.paciente + ';' + r.tipoId + ';' + r.numId + ';' + r.diagnostico + ';' + r.servicioCama + ';' + r.dias); });
-        hosp.forEach(function(r) { lines.push('HOSPITALIZACION;' + r.ciudad + ';' + r.institucion + ';' + r.paciente + ';' + r.tipoId + ';' + r.numId + ';' + r.diagnostico + ';' + r.servicioCama + ';' + r.dias); });
+        var lines = ['CUADRO;Ciudad;Institucion;Paciente;Tipo ID;Numero ID;Servicio / Cama / Registro / Habitacion / Pabellon;Diagnostico Principal;Dias de Estancia'];
+        b.urg_inf.forEach(function(r) { lines.push('1A_URG_INFECCIONES;' + r.ciudad + ';' + r.institucion + ';' + r.paciente + ';' + r.tipoId + ';' + r.numId + ';' + r.servicioCama + ';' + r.diagnostico + ';' + r.dias); });
+        b.hosp_inf.forEach(function(r) { lines.push('1B_HOSP_INFECCIONES;' + r.ciudad + ';' + r.institucion + ';' + r.paciente + ';' + r.tipoId + ';' + r.numId + ';' + r.servicioCama + ';' + r.diagnostico + ';' + r.dias); });
+        b.urg_qca.forEach(function(r) { lines.push('2A_URG_QUIRURGICOS;' + r.ciudad + ';' + r.institucion + ';' + r.paciente + ';' + r.tipoId + ';' + r.numId + ';' + r.servicioCama + ';' + r.diagnostico + ';' + r.dias); });
+        b.hosp_qca.forEach(function(r) { lines.push('2B_HOSP_QUIRURGICOS;' + r.ciudad + ';' + r.institucion + ';' + r.paciente + ';' + r.tipoId + ';' + r.numId + ';' + r.servicioCama + ';' + r.diagnostico + ';' + r.dias); });
         var blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
         var link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'Consolidado_EPS_Sanitas_' + today + '.csv';
+        link.download = 'Consolidado_4_Cuadros_EPS_Sanitas_' + today + '.csv';
         link.click();
         showToast('CSV consolidado descargado');
       }
     }
 
-    // Dibujar las 20 tarjetas inmediatamente antes de cargar librerías externas
+    updateCieStatusBadge();
     renderClinicCards();
   </script>
 
