@@ -163,11 +163,11 @@
     .clinic-title { font-size: 12px; font-weight: 700; color: var(--slate-800); }
     .btn-remove {
       background: none; border: none; color: var(--slate-500); font-weight: 700;
-      cursor: pointer; font-size: 12px; padding: 0 4px; line-height: 1;
+      cursor: pointer; font-size: 11px; padding: 2px 4px; line-height: 1;
     }
     .btn-remove:hover { color: #be123c; }
     .upload-label {
-      display: block; text-align: center; padding: 7px 8px; border-radius: 8px;
+      display: block; text-align: center; padding: 8px; border-radius: 8px;
       background: var(--slate-100); border: 1px solid var(--slate-200);
       color: var(--slate-600); font-size: 11px; font-weight: 600; cursor: pointer;
     }
@@ -182,7 +182,7 @@
       padding: 6px 8px; font-size: 11px;
     }
     .file-head { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
-    .file-name { font-weight: 600; color: var(--slate-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-name { font-weight: 600; color: var(--slate-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 185px; }
     .file-stats { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; color: var(--slate-500); }
     .pill-count { background: var(--teal-100); color: var(--teal-700); font-weight: 700; padding: 1px 6px; border-radius: 4px; }
     .table-wrap { overflow-x: auto; }
@@ -377,7 +377,7 @@
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 
   <script>
-    window.addEventListener('load', () => {
+    window.addEventListener('load', function() {
       if (!window.XLSX) {
         document.getElementById('lib-warning').style.display = 'block';
         logAudit('Aviso: Red bloqueó CDN de Excel. Modo CSV nativo activo.', 'warn');
@@ -387,7 +387,7 @@
       }
     });
 
-    const CLINICS = [
+    var CLINICS = [
       { id: 'fcv', name: 'Fundación Cardiovascular de Colombia', city: 'Floridablanca' },
       { id: 'hic', name: 'Hospital Internacional', city: 'Piedecuesta' },
       { id: 'sanluis', name: 'Clínica San Luis', city: 'Bucaramanga' },
@@ -410,9 +410,9 @@
       { id: 'sanjuandedios', name: 'Hospital San Juan de Dios', city: 'Pamplona' }
     ];
 
-    const clinicState = {};
-    let panelExpanded = true;
-    let activeGroupFilter = 'ALL';
+    var clinicState = {};
+    var panelExpanded = true;
+    var activeGroupFilter = 'ALL';
 
     function norm(str) {
       if (str === null || str === undefined) return '';
@@ -420,26 +420,27 @@
     }
 
     function showToast(msg) {
-      const t = document.getElementById('toast');
+      var t = document.getElementById('toast');
       t.textContent = msg;
       t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2600);
+      setTimeout(function() { t.classList.remove('show'); }, 2600);
     }
 
-    function logAudit(msg, type = 'info') {
-      const box = document.getElementById('audit-log');
-      const now = new Date().toLocaleTimeString('es-CO', { hour12: false });
-      const line = document.createElement('div');
+    function logAudit(msg, type) {
+      var box = document.getElementById('audit-log');
+      var now = new Date().toLocaleTimeString('es-CO', { hour12: false });
+      var line = document.createElement('div');
       if (type === 'err') line.style.color = '#be123c';
       if (type === 'warn') line.style.color = '#b45309';
-      line.textContent = `[${now}] ${msg}`;
+      line.textContent = '[' + now + '] ' + msg;
       box.prepend(line);
     }
 
     function setGroupFilter(grp) {
       activeGroupFilter = grp;
-      ['ALL', 'INF', 'LIT'].forEach(k => {
-        document.getElementById(`btn-grp-${k}`)?.classList.toggle('active', k === grp);
+      ['ALL', 'INF', 'LIT'].forEach(function(k) {
+        var btn = document.getElementById('btn-grp-' + k);
+        if (btn) btn.classList.toggle('active', k === grp);
       });
       renderClinicCards();
       renderConsolidatedTables();
@@ -447,18 +448,18 @@
 
     function toggleClinicsPanel() {
       panelExpanded = !panelExpanded;
-      const grid = document.getElementById('clinics-grid');
-      const btn = document.getElementById('toggle-panel-btn');
+      var grid = document.getElementById('clinics-grid');
+      var btn = document.getElementById('toggle-panel-btn');
       grid.classList.toggle('hidden', !panelExpanded);
       btn.textContent = panelExpanded ? 'Contraer' : 'Expandir (20 IPS)';
     }
 
     function filterClinics() {
-      const q = norm(document.getElementById('clinic-search').value);
-      CLINICS.forEach(c => {
-        const el = document.getElementById(`card-${c.id}`);
+      var q = norm(document.getElementById('clinic-search').value);
+      CLINICS.forEach(function(c) {
+        var el = document.getElementById('card-' + c.id);
         if (!el) return;
-        const match = norm(c.name).includes(q) || norm(c.city).includes(q);
+        var match = norm(c.name).indexOf(q) !== -1 || norm(c.city).indexOf(q) !== -1;
         el.style.display = match ? '' : 'none';
       });
     }
@@ -469,86 +470,133 @@
     }
 
     function renderClinicCards() {
-      const grid = document.getElementById('clinics-grid');
-      grid.innerHTML = CLINICS.map(c => {
-        const st = clinicState[c.id];
-        const files = st?.files || [];
-        const loaded = files.length > 0;
+      var grid = document.getElementById('clinics-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
 
-        const filesHtml = files.map((f, idx) => {
-          const filteredCount = f.records.filter(matchesActiveFilter).length;
-          return `
-            <div class="file-info">
-              <div class="file-head">
-                <div class="file-name" title="${escapeHtml(f.fileName)}">📄 ${escapeHtml(f.fileName)}</div>
-                <button class="btn-remove" onclick="removeSingleFile('${c.id}', ${idx})" title="Quitar este archivo">✕</button>
-              </div>
-              <div class="file-stats">
-                <span>Sanitas: <strong>${f.sanitasCount}</strong></span>
-                <span class="pill-count">Extraídos: ${filteredCount}</span>
-              </div>
-            </div>
-          `;
-        }).join('');
+      CLINICS.forEach(function(c) {
+        var st = clinicState[c.id];
+        var files = (st && st.files) ? st.files : [];
+        var loaded = files.length > 0;
 
-        return `
-          <div id="card-${c.id}"
-               ondragover="handleDragOver(event, '${c.id}')"
-               ondragleave="handleDragLeave(event, '${c.id}')"
-               ondrop="handleDrop(event, '${c.id}')"
-               class="clinic-card ${loaded ? 'loaded' : ''}">
-            <div class="clinic-top">
-              <div style="min-width:0;">
-                <span class="city-badge">${c.city}</span>
-                <div class="clinic-title" title="${c.name}">${c.name}</div>
-              </div>
-              ${loaded ? `<button class="btn-remove" onclick="removeClinicAllFiles('${c.id}')" title="Quitar archivos">Limpiar</button>` : ''}
-            </div>
+        var card = document.createElement('div');
+        card.id = 'card-' + c.id;
+        card.className = 'clinic-card' + (loaded ? ' loaded' : '');
+        card.ondragover = function(e) { e.preventDefault(); card.classList.add('drop-active'); };
+        card.ondragleave = function(e) { e.preventDefault(); card.classList.remove('drop-active'); };
+        card.ondrop = function(e) {
+          e.preventDefault();
+          card.classList.remove('drop-active');
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            processMultipleFiles(c.id, e.dataTransfer.files);
+          }
+        };
 
-            ${loaded ? `
-              <div class="files-stack">
-                ${filesHtml}
-                <label for="file-${c.id}" class="upload-label add-more">+ Agregar otro archivo (${files.length} cargado${files.length > 1 ? 's' : ''})</label>
-              </div>
-            ` : `
-              <label for="file-${c.id}" class="upload-label">Subir 1 o 2 archivos (Excel, CSV, PDF)</label>
-            `}
-            <input id="file-${c.id}" type="file" multiple accept=".xlsx,.xls,.csv,.pdf" class="hidden" onchange="handleFileSelect(event, '${c.id}')" />
-          </div>
-        `;
-      }).join('');
-    }
+        var top = document.createElement('div');
+        top.className = 'clinic-top';
 
-    function handleDragOver(e, id) {
-      e.preventDefault();
-      document.getElementById(`card-${id}`)?.classList.add('drop-active');
-    }
+        var titleWrap = document.createElement('div');
+        titleWrap.style.minWidth = '0';
 
-    function handleDragLeave(e, id) {
-      e.preventDefault();
-      document.getElementById(`card-${id}`)?.classList.remove('drop-active');
-    }
+        var badge = document.createElement('span');
+        badge.className = 'city-badge';
+        badge.textContent = c.city;
 
-    function handleDrop(e, id) {
-      e.preventDefault();
-      document.getElementById(`card-${id}`)?.classList.remove('drop-active');
-      const fileList = e.dataTransfer?.files;
-      if (fileList && fileList.length > 0) processMultipleFiles(id, fileList);
-    }
+        var title = document.createElement('div');
+        title.className = 'clinic-title';
+        title.title = c.name;
+        title.textContent = c.name;
 
-    function handleFileSelect(e, id) {
-      const fileList = e.target?.files;
-      if (fileList && fileList.length > 0) processMultipleFiles(id, fileList);
-      e.target.value = '';
+        titleWrap.appendChild(badge);
+        titleWrap.appendChild(title);
+        top.appendChild(titleWrap);
+
+        if (loaded) {
+          var clearBtn = document.createElement('button');
+          clearBtn.className = 'btn-remove';
+          clearBtn.textContent = 'Limpiar';
+          clearBtn.title = 'Quitar todos los archivos de esta clínica';
+          clearBtn.onclick = function() { removeClinicAllFiles(c.id); };
+          top.appendChild(clearBtn);
+        }
+
+        card.appendChild(top);
+
+        var fileInput = document.createElement('input');
+        fileInput.id = 'file-' + c.id;
+        fileInput.type = 'file';
+        fileInput.multiple = true;
+        fileInput.accept = '.xlsx,.xls,.csv,.pdf';
+        fileInput.className = 'hidden';
+        fileInput.onchange = function(e) {
+          if (e.target && e.target.files && e.target.files.length > 0) {
+            processMultipleFiles(c.id, e.target.files);
+          }
+          e.target.value = '';
+        };
+
+        if (loaded) {
+          var stack = document.createElement('div');
+          stack.className = 'files-stack';
+
+          files.forEach(function(f, idx) {
+            var filteredCount = f.records.filter(matchesActiveFilter).length;
+            var fBox = document.createElement('div');
+            fBox.className = 'file-info';
+
+            var fHead = document.createElement('div');
+            fHead.className = 'file-head';
+
+            var fName = document.createElement('div');
+            fName.className = 'file-name';
+            fName.title = f.fileName;
+            fName.textContent = f.fileName;
+
+            var rmBtn = document.createElement('button');
+            rmBtn.className = 'btn-remove';
+            rmBtn.textContent = 'X';
+            rmBtn.title = 'Quitar este archivo';
+            rmBtn.onclick = function() { removeSingleFile(c.id, idx); };
+
+            fHead.appendChild(fName);
+            fHead.appendChild(rmBtn);
+
+            var fStats = document.createElement('div');
+            fStats.className = 'file-stats';
+            fStats.innerHTML = '<span>Sanitas: <strong>' + f.sanitasCount + '</strong></span><span class="pill-count">Extraídos: ' + filteredCount + '</span>';
+
+            fBox.appendChild(fHead);
+            fBox.appendChild(fStats);
+            stack.appendChild(fBox);
+          });
+
+          var addLabel = document.createElement('label');
+          addLabel.htmlFor = 'file-' + c.id;
+          addLabel.className = 'upload-label add-more';
+          addLabel.textContent = '+ Agregar otro archivo (' + files.length + ' cargado' + (files.length > 1 ? 's' : '') + ')';
+
+          stack.appendChild(addLabel);
+          card.appendChild(stack);
+        } else {
+          var upLabel = document.createElement('label');
+          upLabel.htmlFor = 'file-' + c.id;
+          upLabel.className = 'upload-label';
+          upLabel.textContent = 'Subir 1 o 2 archivos (Excel, CSV, PDF)';
+          card.appendChild(upLabel);
+        }
+
+        card.appendChild(fileInput);
+        grid.appendChild(card);
+      });
     }
 
     function removeSingleFile(clinicId, fileIdx) {
       if (!clinicState[clinicId]) return;
-      const removed = clinicState[clinicId].files.splice(fileIdx, 1)[0];
+      var removed = clinicState[clinicId].files.splice(fileIdx, 1)[0];
       if (clinicState[clinicId].files.length === 0) delete clinicState[clinicId];
       renderClinicCards();
       renderConsolidatedTables();
-      if (removed) logAudit(`Archivo quitado: ${removed.fileName}`);
+      if (removed) logAudit('Archivo quitado: ' + removed.fileName);
     }
 
     function removeClinicAllFiles(clinicId) {
@@ -558,7 +606,7 @@
     }
 
     function clearAllData() {
-      Object.keys(clinicState).forEach(k => delete clinicState[k]);
+      Object.keys(clinicState).forEach(function(k) { delete clinicState[k]; });
       renderClinicCards();
       renderConsolidatedTables();
       logAudit('Memoria limpiada.');
@@ -566,19 +614,18 @@
     }
 
     function isValidSanitas(text) {
-      const s = norm(text);
-      if (!s.includes('SANITAS')) return false;
-      if (s.includes('COLSANITAS') || s.includes('MEDISANITAS')) return false;
+      var s = norm(text);
+      if (s.indexOf('SANITAS') === -1) return false;
+      if (s.indexOf('COLSANITAS') !== -1 || s.indexOf('MEDISANITAS') !== -1) return false;
       return true;
     }
 
     function hasExcludedMP(text) {
-      const s = norm(text);
-      return s.includes('COLSANITAS') || s.includes('MEDISANITAS');
+      var s = norm(text);
+      return s.indexOf('COLSANITAS') !== -1 || s.indexOf('MEDISANITAS') !== -1;
     }
 
-    const DX_RULES = [
-      // Grupo 1: Infecciones / Respiratorio / Cardíaco (INF)
+    var DX_RULES = [
       { group: 'INF', label: 'Neumonía', codes: ['J189', 'J180', 'J181', 'J182', 'J188', 'J15', 'J12', 'J13', 'J14', 'J16', 'J17', 'J851'], words: ['NEUMONIA', 'BRONCONEUMONIA'] },
       { group: 'INF', label: 'Infección vías urinarias', codes: ['N390'], words: ['INFECCION DE VIAS URINARIAS', 'INFECCION VIAS URINARIAS', 'INFECCION URINARIA'] },
       { group: 'INF', label: 'Bronquitis', codes: ['J218', 'J20', 'J40', 'J41', 'J42'], words: ['BRONQUITIS'] },
@@ -587,32 +634,32 @@
       { group: 'INF', label: 'Insuficiencia cardiaca', codes: ['I500', 'I50', 'I501', 'I509', 'I110'], words: ['INSUFICIENCIA CARDIACA', 'FALLA CARDIACA'] },
       { group: 'INF', label: 'Celulitis', codes: ['L03', 'L030', 'L031', 'L032', 'L033', 'L038', 'L039'], words: ['CELULITIS'] },
       { group: 'INF', label: 'Bronquiolitis', codes: ['J219', 'J21', 'J210'], words: ['BRONQUIOLITIS'] },
-      // Grupo 2: Litiasis Biliar-Urinaria / Fracturas Fémur-Tibia-Peroné (LIT)
       { group: 'LIT', label: 'Colelitiasis / Colecistitis', codes: ['K800', 'K801', 'K802', 'K804', 'K805', 'K808', 'K810', 'K811', 'K818', 'K819'], words: ['CALCULO DE LA VESICULA BILIAR', 'CALCULO DE CONDUCTO BILIAR', 'OTRAS COLELITIASIS', 'COLECISTITIS AGUDA', 'COLECISTITIS CRONICA', 'OTRAS COLECISTITIS', 'COLECISTITIS, NO ESPECIFICADA', 'COLECISTITIS NO ESPECIFICADA'] },
       { group: 'LIT', label: 'Litiasis urinaria', codes: ['N200', 'N201', 'N202', 'N209'], words: ['CALCULO DEL RINON', 'CALCULO DEL URETER', 'CALCULO URINARIO'] },
       { group: 'LIT', label: 'Fractura / Trauma Fémur-Tibia-Peroné', codes: ['S824', 'S821', 'S822', 'S823', 'S840', 'S720', 'S723', 'S724', 'S727', 'S728', 'S729'], words: ['FRACTURA DEL PERONE SOLAMENTE', 'FRACTURA DE LA EPIFISIS SUPERIOR DE LA TIBIA', 'FRACTURA DE LA DIAFISIS DE LA TIBIA', 'FRACTURA DE LA EPIFISIS INFERIOR DE LA TIBIA', 'TRAUMATISMO DEL NERVIO TIBIAL', 'FRACTURA DEL CUELLO DEL FEMUR', 'FRACTURA DEL CUELLO DE FEMUR', 'FRACTURA DE LA DIAFISIS DEL FEMUR', 'FRACTURA DE LA EPIFISIS INFERIOR DEL FEMUR', 'FRACTURAS MULTIPLES DEL FEMUR', 'FRACTURAS DE OTRAS PARTES DEL FEMUR', 'FRACTURA DEL FEMUR'] }
     ];
 
     function matchDiagnosis(text) {
-      const s = norm(text);
+      var s = norm(text);
       if (!s) return null;
-      for (const rule of DX_RULES) {
-        for (const code of rule.codes) {
-          const rx = new RegExp(`(^|[^A-Z0-9])${code}([A-Z0-9]?)(?=$|[^A-Z0-9])`);
+      for (var i = 0; i < DX_RULES.length; i++) {
+        var rule = DX_RULES[i];
+        for (var j = 0; j < rule.codes.length; j++) {
+          var rx = new RegExp('(^|[^A-Z0-9])' + rule.codes[j] + '([A-Z0-9]?)(?=$|[^A-Z0-9])');
           if (rx.test(s)) return rule;
         }
-        for (const w of rule.words) {
-          if (s.includes(w)) return rule;
+        for (var k = 0; k < rule.words.length; k++) {
+          if (s.indexOf(rule.words[k]) !== -1) return rule;
         }
       }
       return null;
     }
 
     function classifyArea(serviceText) {
-      const s = norm(serviceText);
+      var s = norm(serviceText);
       if (
-        s.includes('URGENCIA') || s.includes('OBSERVACION') ||
-        s.includes('TRANSICION') || s.includes('EMERGENCIA') ||
+        s.indexOf('URGENCIA') !== -1 || s.indexOf('OBSERVACION') !== -1 ||
+        s.indexOf('TRANSICION') !== -1 || s.indexOf('EMERGENCIA') !== -1 ||
         /\bUOBS\b|\bOBU\b|\bOBM\b|\bOBSP\b|\bOBS\d|\bTRS\b|\bTRU\b|\bTRR\b|\bAISLU/.test(s)
       ) {
         return 'URGENCIAS';
@@ -621,10 +668,10 @@
     }
 
     function splitDocId(rawTipo, rawNum) {
-      let tipo = String(rawTipo || '').trim();
-      let num = String(rawNum || '').trim();
+      var tipo = String(rawTipo || '').trim();
+      var num = String(rawNum || '').trim();
       if (!tipo && num) {
-        const m = num.match(/^(CC|TI|RC|CE|PPT|PT|PA|CN|SC|DE|AS|MS)\s*[-:]?\s*(.+)$/i);
+        var m = num.match(/^(CC|TI|RC|CE|PPT|PT|PA|CN|SC|DE|AS|MS)\s*[-:]?\s*(.+)$/i);
         if (m) {
           tipo = m[1].toUpperCase();
           num = m[2].trim();
@@ -639,67 +686,70 @@
     function calcDaysFromDate(dateVal) {
       if (dateVal === null || dateVal === undefined || dateVal === '') return 0;
       if (typeof dateVal === 'number' && dateVal < 1000) return Math.max(0, Math.round(dateVal));
-      let d = null;
+      var d = null;
       if (typeof dateVal === 'number' && dateVal > 20000) {
         d = new Date(Math.round((dateVal - 25569) * 86400 * 1000));
       } else {
-        const str = String(dateVal).trim();
-        const mDMY = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+        var str = String(dateVal).trim();
+        var mDMY = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
         if (mDMY) {
-          let yr = parseInt(mDMY[3], 10);
+          var yr = parseInt(mDMY[3], 10);
           if (yr < 100) yr += 2000;
           d = new Date(yr, parseInt(mDMY[2], 10) - 1, parseInt(mDMY[1], 10));
         } else {
-          const parsed = new Date(str);
+          var parsed = new Date(str);
           if (!isNaN(parsed.getTime())) d = parsed;
         }
       }
       if (!d || isNaN(d.getTime())) return 0;
-      const now = new Date();
-      const diff = Math.floor((now.setHours(0,0,0,0) - d.setHours(0,0,0,0)) / 86400000);
+      var now = new Date();
+      var diff = Math.floor((now.setHours(0,0,0,0) - d.setHours(0,0,0,0)) / 86400000);
       return Math.max(0, diff);
     }
 
     function parseCsvRows(text) {
-      const sep = text.includes(';') ? ';' : ',';
-      return text.split(/\r?\n/).map(line => line.split(sep).map(cell => cell.replace(/^"|"$/g, '').trim()));
+      var sep = text.indexOf(';') !== -1 ? ';' : ',';
+      return text.split(/\r?\n/).map(function(line) {
+        return line.split(sep).map(function(cell) { return cell.replace(/^"|"$/g, '').trim(); });
+      });
     }
 
     async function processMultipleFiles(clinicId, fileList) {
-      for (const file of Array.from(fileList)) {
-        await processClinicFile(clinicId, file);
+      var arr = Array.from(fileList);
+      for (var i = 0; i < arr.length; i++) {
+        await processClinicFile(clinicId, arr[i]);
       }
     }
 
     async function processClinicFile(clinicId, file) {
-      const clinic = CLINICS.find(c => c.id === clinicId);
-      const ext = file.name.split('.').pop().toLowerCase();
+      var clinic = CLINICS.find(function(c) { return c.id === clinicId; });
+      var ext = file.name.split('.').pop().toLowerCase();
 
       try {
-        let extracted = { sanitasCount: 0, records: [] };
+        var extracted = { sanitasCount: 0, records: [] };
 
         if (ext === 'pdf') {
           if (!window.pdfjsLib) throw new Error('Lector PDF bloqueado por la red institucional.');
           extracted = await parsePdfFile(clinic, file);
         } else if (ext === 'csv') {
-          const txt = await file.text();
+          var txt = await file.text();
           extracted = parseMatrixRows(clinic, parseCsvRows(txt));
         } else {
           if (!window.XLSX) throw new Error('Lector Excel bloqueado por la red. Guarda el archivo como .CSV en Excel y súbelo aquí.');
-          const buffer = await file.arrayBuffer();
-          const wb = XLSX.read(buffer, { type: 'array' });
-          for (const sheetName of wb.SheetNames) {
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: '' });
-            const res = parseMatrixRows(clinic, rows);
+          var buffer = await file.arrayBuffer();
+          var wb = XLSX.read(buffer, { type: 'array' });
+          for (var s = 0; s < wb.SheetNames.length; s++) {
+            var rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[s]], { header: 1, defval: '' });
+            var res = parseMatrixRows(clinic, rows);
             extracted.sanitasCount += res.sanitasCount;
-            extracted.records.push(...res.records);
+            extracted.records = extracted.records.concat(res.records);
           }
         }
 
         if (!clinicState[clinicId]) clinicState[clinicId] = { files: [] };
 
-        const existingIdx = clinicState[clinicId].files.findIndex(f => f.fileName === file.name);
-        const fileEntry = {
+        var existingIdx = clinicState[clinicId].files.findIndex(function(f) { return f.fileName === file.name; });
+        var fileEntry = {
           fileName: file.name,
           sanitasCount: extracted.sanitasCount,
           records: extracted.records
@@ -710,75 +760,75 @@
 
         renderClinicCards();
         renderConsolidatedTables();
-        logAudit(`${clinic.name} (${clinic.city}) [${file.name}]: ${extracted.records.length} extraídos de ${extracted.sanitasCount} registros EPS Sanitas.`);
-        showToast(`${clinic.name}: ${extracted.records.length} extraídos`);
+        logAudit(clinic.name + ' (' + clinic.city + ') [' + file.name + ']: ' + extracted.records.length + ' extraídos de ' + extracted.sanitasCount + ' registros EPS Sanitas.');
+        showToast(clinic.name + ': ' + extracted.records.length + ' extraídos');
       } catch (err) {
-        logAudit(`Error en ${clinic.name} (${file.name}): ${err.message}`, 'err');
+        logAudit('Error en ' + clinic.name + ' (' + file.name + '): ' + err.message, 'err');
         showToast(err.message);
       }
     }
 
     function parseMatrixRows(clinic, rows) {
-      const records = [];
-      let sanitasCount = 0;
-      if (!rows || rows.length === 0) return { sanitasCount, records };
+      var records = [];
+      var sanitasCount = 0;
+      if (!rows || rows.length === 0) return { sanitasCount: sanitasCount, records: records };
 
-      let headerIdx = -1;
-      let colMap = {};
+      var headerIdx = -1;
+      var colMap = {};
 
-      for (let i = 0; i < Math.min(rows.length, 15); i++) {
-        const rNorm = rows[i].map(cell => norm(cell));
-        const hasDoc = rNorm.some(h => h.includes('DOCUMENTO') || h.includes('IDENTIFICACION') || h === 'ID' || h.includes('CEDULA'));
-        const hasDx = rNorm.some(h => h.includes('DIAGNOSTICO') || h === 'DX' || h === 'CIE10' || h === 'UTL_DX');
-        const hasBedOrSrv = rNorm.some(h => h.includes('CAMA') || h.includes('HABITACION') || h.includes('SERVICIO') || h.includes('UBICACION') || h.includes('ESTACION') || h.includes('INGRESO') || h.includes('ATENCION') || h.includes('REGISTRO'));
+      for (var i = 0; i < Math.min(rows.length, 15); i++) {
+        var rNorm = rows[i].map(function(cell) { return norm(cell); });
+        var hasDoc = rNorm.some(function(h) { return h.indexOf('DOCUMENTO') !== -1 || h.indexOf('IDENTIFICACION') !== -1 || h === 'ID' || h.indexOf('CEDULA') !== -1; });
+        var hasDx = rNorm.some(function(h) { return h.indexOf('DIAGNOSTICO') !== -1 || h === 'DX' || h === 'CIE10' || h === 'UTL_DX'; });
+        var hasBedOrSrv = rNorm.some(function(h) { return h.indexOf('CAMA') !== -1 || h.indexOf('HABITACION') !== -1 || h.indexOf('SERVICIO') !== -1 || h.indexOf('UBICACION') !== -1 || h.indexOf('ESTACION') !== -1 || h.indexOf('INGRESO') !== -1 || h.indexOf('ATENCION') !== -1 || h.indexOf('REGISTRO') !== -1; });
 
         if ((hasDoc || hasBedOrSrv) && (hasDx || rNorm.length >= 6)) {
           headerIdx = i;
-          rNorm.forEach((h, idx) => {
-            if (colMap.paciente === undefined && (h === 'PACIENTE' || h.includes('NOMBRE PACIENTE') || h.includes('NOMBRE DEL PACIENTE') || h.includes('NOMBRE_PACIENTE') || h === 'PACIENTENOMBRE' || h === 'NOMBRES')) colMap.paciente = idx;
+          rNorm.forEach(function(h, idx) {
+            if (colMap.paciente === undefined && (h === 'PACIENTE' || h.indexOf('NOMBRE PACIENTE') !== -1 || h.indexOf('NOMBRE DEL PACIENTE') !== -1 || h.indexOf('NOMBRE_PACIENTE') !== -1 || h === 'PACIENTENOMBRE' || h === 'NOMBRES')) colMap.paciente = idx;
             if (colMap.apellidos === undefined && h === 'APELLIDOS') colMap.apellidos = idx;
             if (colMap.atencion === undefined && (h === 'ATENCION' || h === 'INGRESO' || h === 'NO INGRESO' || h === 'NO. INGRESO' || h === 'REGISTRO')) colMap.atencion = idx;
-            if (colMap.cama === undefined && (h.includes('CAMA') || h.includes('HABITACION'))) colMap.cama = idx;
-            if (colMap.servicio === undefined && (h.includes('SERVICIO') || h.includes('UBICACION') || h.includes('ESTACION') || h.includes('GRUPO') || h.includes('PABELLON') || h.includes('HSUNOMBRE') || h.includes('UNIDAD FUNCIONAL'))) colMap.servicio = idx;
-            if (colMap.piso === undefined && (h.includes('PISO') || h.includes('SECTOR'))) colMap.piso = idx;
-            if (colMap.tipoDoc === undefined && (h.includes('TIPO DOC') || h === 'T.D.' || h === 'T. DOCUMENTO' || h === 'TIPO_DOCUMENTO')) colMap.tipoDoc = idx;
-            if (colMap.doc === undefined && (h.includes('DOCUMENTO') || h.includes('IDENTIFICACION') || h === 'ID' || h === 'CEDULA')) colMap.doc = idx;
-            if (colMap.entidad === undefined && (h.includes('ENTIDAD') || h.includes('EMPRESA') || h.includes('CONTRATO') || h === 'EPS' || h.includes('TERCERO') || h === 'PLAN')) colMap.entidad = idx;
+            if (colMap.cama === undefined && (h.indexOf('CAMA') !== -1 || h.indexOf('HABITACION') !== -1)) colMap.cama = idx;
+            if (colMap.servicio === undefined && (h.indexOf('SERVICIO') !== -1 || h.indexOf('UBICACION') !== -1 || h.indexOf('ESTACION') !== -1 || h.indexOf('GRUPO') !== -1 || h.indexOf('PABELLON') !== -1 || h.indexOf('HSUNOMBRE') !== -1 || h.indexOf('UNIDAD FUNCIONAL') !== -1)) colMap.servicio = idx;
+            if (colMap.piso === undefined && (h.indexOf('PISO') !== -1 || h.indexOf('SECTOR') !== -1)) colMap.piso = idx;
+            if (colMap.tipoDoc === undefined && (h.indexOf('TIPO DOC') !== -1 || h === 'T.D.' || h === 'T. DOCUMENTO' || h === 'TIPO_DOCUMENTO')) colMap.tipoDoc = idx;
+            if (colMap.doc === undefined && (h.indexOf('DOCUMENTO') !== -1 || h.indexOf('IDENTIFICACION') !== -1 || h === 'ID' || h.indexOf('CEDULA') !== -1)) colMap.doc = idx;
+            if (colMap.entidad === undefined && (h.indexOf('ENTIDAD') !== -1 || h.indexOf('EMPRESA') !== -1 || h.indexOf('CONTRATO') !== -1 || h === 'EPS' || h.indexOf('TERCERO') !== -1 || h === 'PLAN')) colMap.entidad = idx;
             if (colMap.entidad2 === undefined && (h === 'ENTIDAD 2' || h === 'PLAN B.' || h === 'NOMBREPLAN')) colMap.entidad2 = idx;
-            if (colMap.cie === undefined && (h === 'CIE10' || h.includes('CODIGO') || h === 'DX. INICIAL' || h === 'DIAGNOSTICOINGRESO')) colMap.cie = idx;
-            if (colMap.dx === undefined && (h.includes('DIAGNOSTICO') || h === 'UTL_DX' || h === 'NOMBREDIAGNOSTICO')) colMap.dx = idx;
-            if (colMap.dxSec === undefined && h.includes('SECUNDARIO')) colMap.dxSec = idx;
-            if (colMap.dias === undefined && (h.includes('DIAS') || h.includes('ESTANCIA') || h === 'D.S.' || h === 'TIEMPO')) colMap.dias = idx;
-            if (colMap.fechaIng === undefined && h.includes('FECHA') && h.includes('INGRESO')) colMap.fechaIng = idx;
-            if (colMap.fechaSal === undefined && h.includes('SALIDA')) colMap.fechaSal = idx;
+            if (colMap.cie === undefined && (h === 'CIE10' || h.indexOf('CODIGO') !== -1 || h === 'DX. INICIAL' || h === 'DIAGNOSTICOINGRESO')) colMap.cie = idx;
+            if (colMap.dx === undefined && (h.indexOf('DIAGNOSTICO') !== -1 || h === 'UTL_DX' || h === 'NOMBREDIAGNOSTICO')) colMap.dx = idx;
+            if (colMap.dxSec === undefined && h.indexOf('SECUNDARIO') !== -1) colMap.dxSec = idx;
+            if (colMap.dias === undefined && (h.indexOf('DIAS') !== -1 || h.indexOf('ESTANCIA') !== -1 || h === 'D.S.' || h === 'TIEMPO')) colMap.dias = idx;
+            if (colMap.fechaIng === undefined && h.indexOf('FECHA') !== -1 && h.indexOf('INGRESO') !== -1) colMap.fechaIng = idx;
+            if (colMap.fechaSal === undefined && h.indexOf('SALIDA') !== -1) colMap.fechaSal = idx;
           });
           break;
         }
       }
 
-      let currentGroupHeader = '';
-      const startRow = headerIdx >= 0 ? headerIdx + 1 : 0;
+      var currentGroupHeader = '';
+      var startRow = headerIdx >= 0 ? headerIdx + 1 : 0;
 
-      for (let i = startRow; i < rows.length; i++) {
-        const row = rows[i];
-        const nonEmpty = row.filter(c => String(c).trim() !== '');
+      for (var r = startRow; r < rows.length; r++) {
+        var row = rows[r];
+        var nonEmpty = row.filter(function(c) { return String(c).trim() !== ''; });
         if (nonEmpty.length === 0) continue;
 
         if (nonEmpty.length <= 2) {
-          const banner = String(nonEmpty[0]).trim();
-          if (banner.includes('Total Pacientes:') || norm(banner).startsWith('PABELLON')) {
+          var banner = String(nonEmpty[0]).trim();
+          if (banner.indexOf('Total Pacientes:') !== -1 || norm(banner).indexOf('PABELLON') === 0) {
             currentGroupHeader = banner.split('-  Total Pacientes:')[0].trim();
             continue;
           }
         }
 
         if (colMap.fechaSal !== undefined) {
-          const sal = String(row[colMap.fechaSal] || '').trim();
-          if (sal && sal !== '1/01/0001 12:00:00 a. m.' && !sal.startsWith('0001')) continue;
+          var sal = String(row[colMap.fechaSal] || '').trim();
+          if (sal && sal !== '1/01/0001 12:00:00 a. m.' && sal.indexOf('0001') !== 0) continue;
         }
 
-        const rowJoined = row.map(c => String(c)).join(' | ');
-        let payerText = '';
+        var rowJoined = row.map(function(c) { return String(c); }).join(' | ');
+        var payerText = '';
         if (colMap.entidad !== undefined) payerText += ' ' + String(row[colMap.entidad] || '');
         if (colMap.entidad2 !== undefined) payerText += ' ' + String(row[colMap.entidad2] || '');
         if (!payerText.trim()) payerText = rowJoined;
@@ -788,108 +838,79 @@
 
         sanitasCount++;
 
-        let cieVal = colMap.cie !== undefined ? String(row[colMap.cie] || '').trim() : '';
-        let dxVal = colMap.dx !== undefined ? String(row[colMap.dx] || '').trim() : '';
-        let dxSecVal = colMap.dxSec !== undefined ? String(row[colMap.dxSec] || '').trim() : '';
+        var cieVal = colMap.cie !== undefined ? String(row[colMap.cie] || '').trim() : '';
+        var dxVal = colMap.dx !== undefined ? String(row[colMap.dx] || '').trim() : '';
+        var dxSecVal = colMap.dxSec !== undefined ? String(row[colMap.dxSec] || '').trim() : '';
 
         if (colMap.cie !== undefined && colMap.dx === colMap.cie && row[colMap.cie + 1]) {
           dxVal = String(row[colMap.cie + 1] || '').trim();
         }
 
-        let primaryCombined = [cieVal, dxVal].filter(Boolean).join(' - ');
+        var primaryCombined = [cieVal, dxVal].filter(Boolean).join(' - ');
         if (!primaryCombined) primaryCombined = rowJoined;
 
-        const rulePrimary = matchDiagnosis(primaryCombined);
-        const ruleSecondary = !rulePrimary && dxSecVal ? matchDiagnosis(dxSecVal) : null;
-        const matchedRule = rulePrimary || ruleSecondary;
+        var rulePrimary = matchDiagnosis(primaryCombined);
+        var ruleSecondary = !rulePrimary && dxSecVal ? matchDiagnosis(dxSecVal) : null;
+        var matchedRule = rulePrimary || ruleSecondary;
         if (!matchedRule) continue;
 
-        let pacName = colMap.paciente !== undefined ? String(row[colMap.paciente] || '').trim() : '';
+        var pacName = colMap.paciente !== undefined ? String(row[colMap.paciente] || '').trim() : '';
         if (colMap.apellidos !== undefined && row[colMap.apellidos]) {
-          pacName = `${pacName} ${String(row[colMap.apellidos]).trim()}`.trim();
+          pacName = (pacName + ' ' + String(row[colMap.apellidos]).trim()).trim();
         }
         if (!pacName) pacName = 'No registra';
 
-        const rawDoc = colMap.doc !== undefined ? String(row[colMap.doc] || '').trim() : '';
-        const rawTipo = colMap.tipoDoc !== undefined ? String(row[colMap.tipoDoc] || '').trim() : '';
-        const { tipoId, numId } = splitDocId(rawTipo, rawDoc);
+        var rawDoc = colMap.doc !== undefined ? String(row[colMap.doc] || '').trim() : '';
+        var rawTipo = colMap.tipoDoc !== undefined ? String(row[colMap.tipoDoc] || '').trim() : '';
+        var docObj = splitDocId(rawTipo, rawDoc);
 
-        const atenStr = colMap.atencion !== undefined ? String(row[colMap.atencion] || '').trim() : '';
-        const camaStr = colMap.cama !== undefined ? String(row[colMap.cama] || '').trim() : '';
-        const srvStr = colMap.servicio !== undefined ? String(row[colMap.servicio] || '').trim() : currentGroupHeader;
-        const pisoStr = colMap.piso !== undefined ? String(row[colMap.piso] || '').trim() : '';
+        var atenStr = colMap.atencion !== undefined ? String(row[colMap.atencion] || '').trim() : '';
+        var camaStr = colMap.cama !== undefined ? String(row[colMap.cama] || '').trim() : '';
+        var srvStr = colMap.servicio !== undefined ? String(row[colMap.servicio] || '').trim() : currentGroupHeader;
+        var pisoStr = colMap.piso !== undefined ? String(row[colMap.piso] || '').trim() : '';
 
-        const locParts = [];
-        if (currentGroupHeader && !norm(srvStr).includes(norm(currentGroupHeader))) locParts.push(currentGroupHeader);
+        var locParts = [];
+        if (currentGroupHeader && norm(srvStr).indexOf(norm(currentGroupHeader)) === -1) locParts.push(currentGroupHeader);
         if (srvStr) locParts.push(srvStr);
-        if (pisoStr && !norm(srvStr).includes(norm(pisoStr))) locParts.push(pisoStr);
-        if (camaStr) locParts.push(`Cama ${camaStr}`);
-        if (atenStr && atenStr !== numId) locParts.push(`Ing/Reg ${atenStr}`);
+        if (pisoStr && norm(srvStr).indexOf(norm(pisoStr)) === -1) locParts.push(pisoStr);
+        if (camaStr) locParts.push('Cama ' + camaStr);
+        if (atenStr && atenStr !== docObj.numId) locParts.push('Ing/Reg ' + atenStr);
 
-        const servicioCama = locParts.join(' / ') || 'Sin ubicación especificada';
+        var servicioCama = locParts.join(' / ') || 'Sin ubicación especificada';
 
-        let dias = 0;
+        var dias = 0;
         if (colMap.dias !== undefined && row[colMap.dias] !== '') {
-          const rawD = String(row[colMap.dias]).trim();
-          const dMatch = rawD.match(/^(\d+)\s*d/i);
+          var rawD = String(row[colMap.dias]).trim();
+          var dMatch = rawD.match(/^(\d+)\s*d/i);
           if (dMatch) dias = parseInt(dMatch[1], 10);
           else if (!isNaN(Number(rawD))) dias = Math.max(0, Math.round(Number(rawD)));
         } else if (colMap.fechaIng !== undefined) {
           dias = calcDaysFromDate(row[colMap.fechaIng]);
         }
 
-        const finalDx = rulePrimary ? primaryCombined : `${primaryCombined} (Secundario: ${dxSecVal})`;
-        const area = classifyArea(`${currentGroupHeader} ${srvStr} ${camaStr}`);
+        var finalDx = rulePrimary ? primaryCombined : (primaryCombined + ' (Secundario: ' + dxSecVal + ')');
+        var area = classifyArea(currentGroupHeader + ' ' + srvStr + ' ' + camaStr);
 
         records.push({
           ciudad: clinic.city,
           institucion: clinic.name,
           paciente: pacName,
-          tipoId,
-          numId,
+          tipoId: docObj.tipoId,
+          numId: docObj.numId,
           diagnostico: finalDx,
-          servicioCama,
-          dias,
-          area,
+          servicioCama: servicioCama,
+          dias: dias,
+          area: area,
           group: matchedRule.group
         });
       }
 
-      return { sanitasCount, records };
+      return { sanitasCount: sanitasCount, records: records };
     }
 
     async function parsePdfFile(clinic, file) {
-      const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-      let fullText = '';
-      for (let p = 1; p <= pdf.numPages; p++) {
-        const page = await pdf.getPage(p);
-        const content = await page.getTextContent();
-        fullText += '\n' + content.items.map(it => it.str).join(' ');
-      }
-      const records = [];
-      let sanitasCount = 0;
-      const tokens = fullText.split(/\s+/);
-      let currentBlock = [];
-      const blocks = [];
-      for (const tok of tokens) {
-        if (/^\d{7,14}$/.test(tok) && currentBlock.length > 6) {
-          blocks.push(currentBlock.join(' '));
-          currentBlock = [tok];
-        } else {
-          currentBlock.push(tok);
-        }
-      }
-      if (currentBlock.length > 0) blocks.push(currentBlock.join(' '));
-
-      for (const blk of blocks) {
-        if (hasExcludedMP(blk)) continue;
-        const mentionsOtherEps = /\b(NUEVA EPS|COOSALUD|SALUD TOTAL|FAMISANAR|ASMET|COMFAORIENTE|SOAT|PREVISORA)\b/.test(norm(blk));
-        if (mentionsOtherEps && !isValidSanitas(blk)) continue;
-        sanitasCount++;
-        const matchedRule = matchDiagnosis(blk);
-        if (!matchedRule) continue;
-
-        const docMatch = blk.match(/\b(\d{6,14})\b/);
-        const nameMatch = blk.match(/\b\d{6,14}\s+([A-ZÁÉÍÓÚÑ\s]{6,45}?)(?=\s+\d|\s+M\b|\s+F\b|\s+AÑO|\s+MES|\s+DIA)/i);
-        const habMatch = blk.match(/\b(HAB\.?\s*\d+[A-Z]?|CAMA\
+      var buffer = await file.arrayBuffer();
+      var pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      var fullText = '';
+      for (var p = 1; p <= pdf.numPages; p++) {
+        var page = await pdf.getPage(
